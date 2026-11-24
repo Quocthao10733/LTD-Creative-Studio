@@ -525,31 +525,6 @@ export default function DashboardPage() {
                       })}
                     </div>
                   </div>
-
-                  {/* 4. Scene Switcher & Interactive Prompt */}
-                  <div className="pt-2 flex flex-wrap items-center justify-between gap-2 border-t border-white/10 text-xs">
-                    {/* Scene Buttons */}
-                    <div className="flex items-center gap-1.5 p-1 rounded-xl bg-white/5 border border-white/10">
-                      {darkroomScenes.map((scene, idx) => (
-                        <button
-                          key={idx}
-                          onClick={() => setActiveScene(idx)}
-                          className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all ${
-                            activeScene === idx
-                              ? "bg-white text-slate-950 font-bold shadow-sm"
-                              : "text-slate-400 hover:text-white"
-                          }`}
-                        >
-                          {scene.title}
-                        </button>
-                      ))}
-                    </div>
-
-                    {/* Instruction Tag */}
-                    <div className="text-[11px] text-cyan-400 font-mono font-semibold flex items-center gap-1">
-                      <span>↔ Kéo thanh trượt để so sánh</span>
-                    </div>
-                  </div>
                 </div>
 
                 {/* 5. Floating Holographic Quality Badge */}

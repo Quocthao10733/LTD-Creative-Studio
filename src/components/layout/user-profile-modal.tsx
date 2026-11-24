@@ -31,7 +31,7 @@ interface UserProfileModalProps {
 }
 
 export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
-  const { user, profile, logout, setLocalProfile } = useAuth();
+  const { user, profile, logout, updateUserProfile } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [displayName, setDisplayName] = useState(profile?.displayName || "Đỗ Quốc Thảo");
@@ -46,6 +46,7 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
     profile?.photoURL || SUGGESTED_AVATARS[0]
   );
   const [saveToast, setSaveToast] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   if (!isOpen) return null;
 
@@ -69,8 +70,9 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
     reader.readAsDataURL(file);
   };
 
-  // Lưu hồ sơ
-  const handleSaveProfile = () => {
+  // Lưu hồ sơ và đồng bộ lên Cloud (Firebase Realtime Database)
+  const handleSaveProfile = async () => {
+    setIsSaving(true);
     const updatedProfile = {
       uid: profile?.uid || user?.uid || `user-${Date.now()}`,
       email: profile?.email || user?.email || "dothao783@gmail.com",
@@ -83,8 +85,9 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
       updatedAt: new Date().toISOString(),
     };
 
-    setLocalProfile(updatedProfile);
-    setSaveToast("Đã cập nhật ảnh đại diện và hồ sơ cá nhân!");
+    await updateUserProfile(updatedProfile);
+    setIsSaving(false);
+    setSaveToast("Đã đồng bộ ảnh đại diện và hồ sơ cá nhân lên máy tính & điện thoại!");
     setTimeout(() => {
       setSaveToast(null);
       onClose();

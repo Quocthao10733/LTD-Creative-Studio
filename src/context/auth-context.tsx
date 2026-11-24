@@ -10,6 +10,7 @@ import {
   loginWithGoogleFirebase,
   logoutFirebase,
   fetchUserProfile,
+  saveUserProfileToCloud,
 } from "@/lib/firebase";
 
 interface AuthContextType {
@@ -28,6 +29,7 @@ interface AuthContextType {
   loginWithGoogle: (dept?: "Ban Truyền thông" | "Ban Kỹ thuật") => Promise<void>;
   logout: () => Promise<void>;
   setLocalProfile: (profile: UserProfile) => void;
+  updateUserProfile: (profile: UserProfile) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -153,6 +155,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const updateUserProfile = async (newProfile: UserProfile): Promise<boolean> => {
+    setProfile(newProfile);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("LTD_CURRENT_USER", JSON.stringify(newProfile));
+      localStorage.setItem(`LTD_USER_PROFILE_${newProfile.uid}`, JSON.stringify(newProfile));
+    }
+    return await saveUserProfileToCloud(newProfile);
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -164,6 +175,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         loginWithGoogle,
         logout,
         setLocalProfile,
+        updateUserProfile,
       }}
     >
       {children}

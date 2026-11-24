@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getGeminiClient, LTD_KNOWLEDGE_BASE } from "@/lib/ai/gemini";
+import { getGeminiClient, LTD_KNOWLEDGE_BASE, LTD_EXPERT_SKILLS_PROMPT } from "@/lib/ai/gemini";
 import { EditDecisionList, EDLShot, RawClip } from "@/lib/types/video";
 
 export async function POST(request: NextRequest) {
@@ -12,16 +12,21 @@ export async function POST(request: NextRequest) {
     const duration = targetDuration || 15;
 
     const ai = getGeminiClient();
-    const selectedModel = model || "gemini-2.5-flash";
+    const selectedModel =
+      model === "gemini-2.5-flash" || !model ? "gemini-3.5-flash-lite" : model;
 
     const systemPrompt = `
-Bạn là AI Video Director & Editor chuyên nghiệp của CLB Nhiếp ảnh LTD (Long Thành Digital Photo Club).
-Nhiệm vụ của bạn là phân tích các đoạn video gốc (raw clips) và xây dựng kịch bản dựng phim kỹ thuật số (Edit Decision List - EDL) theo cấu trúc video ngắn mạng xã hội (TikTok, Facebook Reels):
-1. [0-3s]: Hook giật tít, bắt mắt, giữ chân người xem ngay lập tức.
-2. [Thân video]: Cắt gọn, loại bỏ khoảng thừa, chuyển cảnh theo nhịp điệu (B-roll, cận cảnh máy ảnh, kỹ thuật nhiếp ảnh).
-3. [Outro]: Kêu gọi hành động (Follow LTD Photo Club) kèm logo CLB.
+Bạn là Đạo diễn Hậu kỳ Video (Lead Video Editor & Director) của CLB Nhiếp ảnh LTD, vận dụng phương pháp dựng phim và viral video từ 53 kỹ năng Marketing & Video hàng đầu.
 
 ${LTD_KNOWLEDGE_BASE}
+
+${LTD_EXPERT_SKILLS_PROMPT}
+
+QUY TẮC DỰNG VIDEO SHORT 9:16:
+1. [0-3s]: Hook thị giác cực mạnh kèm âm thanh đánh động, giữ chân người xem không lướt qua.
+2. [Thân video]: Nhịp cắt nhanh (2-3 giây/cảnh), đan xen giữa B-roll cận cảnh thao tác máy ảnh, nụ cười thanh xuân và phong cảnh bến sông Long Thành.
+3. [Subtitles]: Câu chữ súc tích, nhịp điệu ngắn, font hiển thị rõ ràng.
+4. [Outro]: Kêu gọi tương tác tự nhiên.
 
 ĐỊNH DẠNG ĐẦU RA (JSON FORMAT DUY NHẤT):
 Trả về DUY NHẤT một đối tượng JSON hợp lệ (không kèm markdown \`\`\`json) với cấu trúc:
@@ -40,8 +45,7 @@ Trả về DUY NHẤT một đối tượng JSON hợp lệ (không kèm markdow
       "subtitleText": "Hook 3s phụ đề hiển thị",
       "speed": 1.0,
       "transition": "fade"
-    },
-    ...
+    }
   ],
   "backgroundMusic": "ambient_chill_beat",
   "outroLogo": "logo.png"

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getGeminiClient, LTD_KNOWLEDGE_BASE } from "@/lib/ai/gemini";
+import { getGeminiClient, LTD_KNOWLEDGE_BASE, LTD_EXPERT_SKILLS_PROMPT } from "@/lib/ai/gemini";
 import { AutoLayoutRequest, AutoLayoutResponse, CanvasLayer, CANVAS_PRESETS } from "@/lib/types/design";
 
 export async function POST(request: NextRequest) {
@@ -221,14 +221,20 @@ export async function POST(request: NextRequest) {
       ],
     };
 
-    // Thử gọi Gemini AI để sáng tạo slogan và tiêu đề chuyên sâu
+    // Thử gọi Gemini AI để sáng tạo slogan và tiêu đề chuyên sâu theo 53 Visual Skills
     try {
       const ai = getGeminiClient();
       const systemPrompt = `
-Bạn là Giám đốc Sáng tạo & Thiết kế Đồ họa (Art Director) của CLB Nhiếp Ảnh LTD (Long Thành Digital Photo Club).
-Nhiệm vụ của bạn là nhận chủ đề sự kiện, tự động phân tích và tạo kịch bản thiết kế Poster/Banner hoàn chỉnh theo tỉ lệ ${preset.aspectRatio} (${preset.name}).
+Bạn là Giám đốc Sáng tạo & Thiết kế Đồ họa (Art Director & Canva Master) của CLB Nhiếp Ảnh LTD (Long Thành Digital Photo Club), được đào tạo bài bản từ 53 kỹ năng Thiết kế, Thị giác & Marketing hàng đầu.
 
 ${LTD_KNOWLEDGE_BASE}
+
+${LTD_EXPERT_SKILLS_PROMPT}
+
+QUY TẮC THIẾT KẾ VISUAL CHO POSTER / BANNER:
+1. Phân cấp thị giác 3 giây: Tiêu đề phải đập vào mắt người xem đầu tiên, không dùng từ sáo rỗng.
+2. Tỉ lệ khung hình: ${preset.aspectRatio} (${preset.name}).
+3. Background Prompt: Phải mô tả chi tiết không gian ánh sáng nhiếp ảnh, độ sâu trường ảnh (bokeh), có khoảng trống (negative space) để văn bản hiển thị tương phản cao.
 
 YÊU CẦU ĐẦU RA JSON DUY NHẤT (không kèm markdown):
 {
@@ -236,13 +242,13 @@ YÊU CẦU ĐẦU RA JSON DUY NHẤT (không kèm markdown):
   "subtitle": "Phụ đề hoặc câu slogan truyền cảm hứng ngắn gọn (1 câu)",
   "badgeText": "Tag sự kiện (ví dụ: WORKSHOP CHUYÊN ĐỀ • BAN KỸ THUẬT)",
   "callToAction": "Hành động ngắn (ví dụ: ĐĂNG KÝ THAM GIA, XEM CHI TIẾT)",
-  "backgroundImagePrompt": "Mô tả chi tiết bằng tiếng Anh để sinh ảnh AI nền phù hợp với chủ đề",
-  "tipsForDesigner": ["Gợi ý 1", "Gợi ý 2"]
+  "backgroundImagePrompt": "Mô tả chi tiết bằng tiếng Anh chuẩn Prompt Midjourney/Imagen với bokeh ống kính, ánh sáng cinematic",
+  "tipsForDesigner": ["Gợi ý bố cục 1", "Gợi ý màu sắc 2"]
 }
 `;
 
       const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: "gemini-3.5-flash-lite",
         contents: `Chủ đề sự kiện: "${topic}". Loại sự kiện: "${eventType}". Diễn giả/Host: "${speakerOrHost}". Ngày giờ: "${dateStr} ${timeStr}". Địa điểm: "${locationStr}".`,
         config: {
           systemInstruction: systemPrompt,

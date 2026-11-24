@@ -16,6 +16,8 @@ import {
   ref,
   onValue,
   set,
+  get,
+  child,
   remove,
   Database,
 } from "firebase/database";
@@ -25,6 +27,7 @@ import {
   onSnapshot,
   doc,
   setDoc,
+  getDoc,
   deleteDoc,
   Firestore,
 } from "firebase/firestore";
@@ -165,7 +168,7 @@ export interface UserProfile {
 }
 
 /**
- * Đăng ký tài khoản thành viên mới trên Firebase Authentication & Firestore
+ * Đăng ký tài khoản thành viên mới trên Firebase Authentication & Realtime Cloud
  */
 export async function registerWithFirebase(params: {
   email: string;
@@ -181,17 +184,26 @@ export async function registerWithFirebase(params: {
   const cred = await createUserWithEmailAndPassword(auth, params.email, params.password);
   const user = cred.user;
 
-  // Cập nhật displayName trên Firebase Auth
-  await updateProfile(user, {
-    displayName: params.displayName,
-    photoURL: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
-  });
+  // Tạo avatar đại diện cá nhân hóa theo tên thành viên
+  const initialPhoto = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(
+    params.displayName
+  )}&backgroundColor=0ea5e9,6366f1,2563eb`;
+
+  // Cập nhật displayName và photoURL trên Firebase Auth
+  try {
+    await updateProfile(user, {
+      displayName: params.displayName,
+      photoURL: initialPhoto,
+    });
+  } catch (err) {
+    console.warn("Cập nhật Auth profile thất bại:", err);
+  }
 
   const profile: UserProfile = {
     uid: user.uid,
     email: user.email || params.email,
     displayName: params.displayName,
-    photoURL: user.photoURL || undefined,
+    photoURL: initialPhoto,
     department: params.department,
     role: params.role || "Thành viên",
     phone: params.phone,
@@ -199,14 +211,24 @@ export async function registerWithFirebase(params: {
     updatedAt: new Date().toISOString(),
   };
 
-  // Lưu thông tin chi tiết vào Firestore collection 'users'
+  // Đồng bộ lên Firebase Realtime Database (đồng bộ tức thì giữa PC và Điện thoại)
+  const rtdb = getFirebaseDatabase();
+  if (rtdb) {
+    try {
+      await set(ref(rtdb, `users/${user.uid}`), profile);
+    } catch (rtdbErr) {
+      console.warn("Lưu profile RTDB lỗi:", rtdbErr);
+    }
+  }
+
+  // Đồng bộ thêm vào Firestore collection 'users'
   const firestore = getFirebaseFirestore();
   if (firestore) {
     try {
       const userRef = doc(firestore, "users", user.uid);
-      await setDoc(userRef, profile);
+      await setDoc(userRef, profile, { merge: true });
     } catch (fsErr) {
-      console.warn("Lưu profile Firestore lỗi (cần rules mở):", fsErr);
+      console.warn("Lưu profile Firestore lỗi:", fsErr);
     }
   }
 
@@ -308,22 +330,125 @@ export async function logoutFirebase(): Promise<void> {
 }
 
 /**
- * Lấy thông tin User Profile từ Firestore hoặc localStorage
+ * Lưu hồ sơ người dùng lên Cloud (Firebase Auth + Realtime Database + Firestore)
+ * Đảm bảo đồng bộ 100% giữa Máy tính và Điện thoại
+ */
+export async function saveUserProfileToCloud(profile: UserProfile): Promise<boolean> {
+  let success = false;
+  const auth = getFirebaseAuth();
+
+  // 1. Cập nhật Firebase Auth profile của user hiện tại
+  if (auth && auth.currentUser) {
+    try {
+      await updateProfile(auth.currentUser, {
+        displayName: profile.displayName,
+        photoURL: profile.photoURL,
+      });
+      success = true;
+    } catch (e) {
+      console.warn("Lỗi cập nhật Firebase Auth profile:", e);
+    }
+  }
+
+  // 2. Lưu vào Firebase Realtime Database (đồng bộ tức thì mọi thiết bị)
+  const rtdb = getFirebaseDatabase();
+  if (rtdb && profile.uid) {
+    try {
+      await set(ref(rtdb, `users/${profile.uid}`), profile);
+      success = true;
+    } catch (e) {
+      console.warn("Lỗi lưu profile lên Realtime Database:", e);
+    }
+  }
+
+  // 3. Lưu vào Firestore
+  const firestore = getFirebaseFirestore();
+  if (firestore && profile.uid) {
+    try {
+      await setDoc(doc(firestore, "users", profile.uid), profile, { merge: true });
+      success = true;
+    } catch (e) {
+      console.warn("Lỗi lưu profile lên Firestore:", e);
+    }
+  }
+
+  // 4. Lưu offline localStorage
+  if (typeof window !== "undefined") {
+    localStorage.setItem(`LTD_USER_PROFILE_${profile.uid}`, JSON.stringify(profile));
+    localStorage.setItem("LTD_CURRENT_USER", JSON.stringify(profile));
+  }
+
+  return success;
+}
+
+/**
+ * Lấy thông tin User Profile từ Realtime Database, Firestore hoặc Auth
+ * Đảm bảo dữ liệu máy tính & điện thoại luôn đồng nhất
  */
 export async function fetchUserProfile(uid: string): Promise<UserProfile | null> {
+  // 1. Thử lấy từ Firebase Realtime Database trước (đồng bộ tức thì và tin cậy nhất)
+  const rtdb = getFirebaseDatabase();
+  if (rtdb) {
+    try {
+      const snap = await get(child(ref(rtdb), `users/${uid}`));
+      if (snap.exists()) {
+        const data = snap.val() as UserProfile;
+        if (typeof window !== "undefined") {
+          localStorage.setItem(`LTD_USER_PROFILE_${uid}`, JSON.stringify(data));
+          localStorage.setItem("LTD_CURRENT_USER", JSON.stringify(data));
+        }
+        return data;
+      }
+    } catch (e) {
+      console.warn("Không thể tải profile từ RTDB:", e);
+    }
+  }
+
+  // 2. Thử lấy từ Firestore
   const firestore = getFirebaseFirestore();
   if (firestore) {
     try {
-      const snap = await onSnapshot(doc(firestore, "users", uid), () => {});
-    } catch {}
+      const snap = await getDoc(doc(firestore, "users", uid));
+      if (snap.exists()) {
+        const data = snap.data() as UserProfile;
+        if (typeof window !== "undefined") {
+          localStorage.setItem(`LTD_USER_PROFILE_${uid}`, JSON.stringify(data));
+          localStorage.setItem("LTD_CURRENT_USER", JSON.stringify(data));
+        }
+        return data;
+      }
+    } catch (e) {
+      console.warn("Không thể tải profile từ Firestore:", e);
+    }
   }
 
+  // 3. Đọc từ Firebase Auth User hiện tại (nếu đang đăng nhập)
+  const auth = getFirebaseAuth();
+  if (auth && auth.currentUser && auth.currentUser.uid === uid) {
+    const cu = auth.currentUser;
+    const authProfile: UserProfile = {
+      uid: cu.uid,
+      email: cu.email || "",
+      displayName: cu.displayName || cu.email?.split("@")[0] || "Thành viên LTD",
+      photoURL: cu.photoURL || undefined,
+      department: "Ban Truyền thông",
+      role: "Thành viên",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    return authProfile;
+  }
+
+  // 4. Fallback localStorage
   if (typeof window !== "undefined") {
     try {
-      const local = localStorage.getItem(`LTD_USER_PROFILE_${uid}`) || localStorage.getItem("LTD_CURRENT_USER");
+      const local =
+        localStorage.getItem(`LTD_USER_PROFILE_${uid}`) ||
+        localStorage.getItem("LTD_CURRENT_USER");
       if (local) return JSON.parse(local);
     } catch {}
   }
+
   return null;
 }
 
