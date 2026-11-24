@@ -72,31 +72,87 @@ export default function DashboardPage() {
   const [savedToast, setSavedToast] = React.useState(false);
   const [showShowreelModal, setShowShowreelModal] = React.useState(false);
 
-  // 3D perspective tilt effect and interactive viewfinder state
+  // 3D perspective tilt effect and interactive darkroom state
   const [tilt, setTilt] = React.useState({ x: 0, y: 0 });
-  const [lensMode, setLensMode] = React.useState<"portrait" | "landscape" | "cinema">("portrait");
-  const [shutterFlash, setShutterFlash] = React.useState(false);
-  const [focusPoint, setFocusPoint] = React.useState({ x: 50, y: 50 });
+  const [sliderPos, setSliderPos] = React.useState(50);
+  const [isDraggingSlider, setIsDraggingSlider] = React.useState(false);
+  const [activePreset, setActivePreset] = React.useState<"golden" | "portra" | "cinematic" | "monochrome">("golden");
+  const [activeScene, setActiveScene] = React.useState(0);
+  const sliderContainerRef = React.useRef<HTMLDivElement>(null);
 
-  const handleViewfinderMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+  const darkroomScenes = [
+    {
+      title: "Hoàng Hôn Hồ Trị An",
+      tag: "Phototrip CLB LTD",
+      url: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=1200&q=80",
+      gear: "Sony A7 IV · 85mm f/1.4 GM",
+      exif: "1/1250s · f/1.4 · ISO 100",
+    },
+    {
+      title: "Nụ Cười Thanh Xuân",
+      tag: "Chân dung tự nhiên",
+      url: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1200&q=80",
+      gear: "Canon EOS R6 · 50mm f/1.2L",
+      exif: "1/1600s · f/1.2 · ISO 100",
+    },
+    {
+      title: "Bình Minh Đồng Nai",
+      tag: "Phong cảnh thiên nhiên",
+      url: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80",
+      gear: "Fujifilm X-T4 · 16-55mm f/2.8",
+      exif: "1/500s · f/8.0 · ISO 160",
+    },
+  ];
+
+  const lutPresets = {
+    golden: {
+      name: "LTD Golden Hour",
+      filter: "saturate(1.4) contrast(1.15) brightness(1.02) sepia(0.2) hue-rotate(-6deg)",
+      desc: "Nắng vàng ấm áp, tương phản nghệ thuật",
+      color: "#f59e0b",
+    },
+    portra: {
+      name: "Kodak Portra 400",
+      filter: "saturate(1.12) contrast(1.08) brightness(1.08) sepia(0.08)",
+      desc: "Tone màu phim cổ điển, sáng trong & mịn da",
+      color: "#fb7185",
+    },
+    cinematic: {
+      name: "Teal & Orange",
+      filter: "saturate(1.3) contrast(1.28) brightness(0.96) hue-rotate(10deg)",
+      desc: "Điện ảnh Hollywood, tương phản sâu sắc",
+      color: "#06b6d4",
+    },
+    monochrome: {
+      name: "Leica Monochrom",
+      filter: "grayscale(1) contrast(1.45) brightness(0.96)",
+      desc: "Đen trắng tương phản cao chuẩn triển lãm",
+      color: "#94a3b8",
+    },
+  };
+
+  const updateSliderPos = (clientX: number) => {
+    if (!sliderContainerRef.current) return;
+    const rect = sliderContainerRef.current.getBoundingClientRect();
+    const x = clientX - rect.left;
+    const pct = Math.max(5, Math.min(95, (x / rect.width) * 100));
+    setSliderPos(pct);
+  };
+
+  const handleSliderMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
-    const x = Math.max(10, Math.min(90, ((e.clientX - rect.left) / rect.width) * 100));
-    const y = Math.max(10, Math.min(90, ((e.clientY - rect.top) / rect.height) * 100));
-    setFocusPoint({ x, y });
-
-    const tiltX = ((e.clientX - rect.left) / rect.width - 0.5) * 14;
-    const tiltY = -((e.clientY - rect.top) / rect.height - 0.5) * 14;
+    const tiltX = ((e.clientX - rect.left) / rect.width - 0.5) * 10;
+    const tiltY = -((e.clientY - rect.top) / rect.height - 0.5) * 10;
     setTilt({ x: tiltX, y: tiltY });
+
+    if (isDraggingSlider || e.buttons === 1) {
+      updateSliderPos(e.clientX);
+    }
   };
 
   const handleMouseLeave = () => {
     setTilt({ x: 0, y: 0 });
-    setFocusPoint({ x: 50, y: 50 });
-  };
-
-  const handleTriggerShutter = () => {
-    setShutterFlash(true);
-    setTimeout(() => setShutterFlash(false), 240);
+    setIsDraggingSlider(false);
   };
 
   // Load user approved stats from localStorage or real database counts
@@ -315,186 +371,188 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Right 6 Columns: 3D CYBER-OPTICS CAMERA VIEWFINDER & LIVE DARKROOM HUD (CỰC KỲ Ồ WAOO!) */}
+            {/* Right 6 Columns: INTERACTIVE BEFORE/AFTER DARKROOM STUDIO & FILM LUT COMPARISON */}
             <div className="lg:col-span-6 relative perspective-1200">
               <div
-                onMouseMove={handleViewfinderMouseMove}
+                onMouseMove={handleSliderMove}
                 onMouseLeave={handleMouseLeave}
+                onTouchMove={(e) => {
+                  if (e.touches[0]) updateSliderPos(e.touches[0].clientX);
+                }}
                 style={{
                   transform: `rotateY(${tilt.x}deg) rotateX(${tilt.y}deg)`,
                   transition: "transform 0.15s cubic-bezier(0.16, 1, 0.3, 1)",
                 }}
-                className="relative rounded-3xl bg-[#090f17]/95 border border-white/20 p-4 shadow-2xl shadow-cyan-950/60 backdrop-blur-2xl transition-all duration-300 group hover:border-cyan-400/50 select-none"
+                className="relative rounded-3xl bg-[#090f17]/95 border border-white/20 p-4 sm:p-5 shadow-2xl shadow-cyan-950/60 backdrop-blur-2xl transition-all duration-300 group hover:border-cyan-400/50 select-none"
               >
-                {/* 1. Camera Chassis Top Metadata Bar */}
+                {/* 1. Darkroom Chassis Header */}
                 <div className="flex items-center justify-between pb-3 px-1 text-[11px] font-mono text-slate-400 border-b border-white/10">
                   <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse shadow-[0_0_8px_#f43f5e]" />
-                    <span className="font-bold text-white tracking-wider">● REC 00:24:19:08</span>
+                    <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_#22d3ee]" />
+                    <span className="font-bold text-white tracking-wider">LTD DARKROOM ENGINE v2.4</span>
                     <span className="hidden sm:inline text-slate-500">|</span>
-                    <span className="hidden sm:inline text-cyan-300">RAW 14-BIT S-LOG3</span>
+                    <span className="hidden sm:inline text-cyan-300">14-BIT RAW DUAL-VIEW</span>
                   </div>
-                  <div className="flex items-center gap-3 font-semibold">
-                    <span className="text-amber-400">4K 60FPS</span>
-                    <span className="text-emerald-400">98% ⚡</span>
+                  <div className="flex items-center gap-2 text-[10px] font-bold text-slate-300">
+                    <span className="px-2 py-0.5 rounded-full bg-white/10 border border-white/10 text-cyan-300">
+                      {darkroomScenes[activeScene].tag}
+                    </span>
                   </div>
                 </div>
 
-                {/* 2. Interactive Camera Viewfinder Display */}
-                <div className="relative aspect-[16/10] w-full rounded-2xl overflow-hidden bg-black mt-3 border border-white/15 cursor-crosshair group/viewfinder">
-                  {/* Active Photograph depending on Lens Mode */}
-                  <img
-                    src={
-                      lensMode === "portrait"
-                        ? "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1200&q=80"
-                        : lensMode === "landscape"
-                        ? "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80"
-                        : "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=1200&q=80"
-                    }
-                    alt="LTD Viewfinder Artwork"
-                    className="w-full h-full object-cover transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/viewfinder:scale-105"
-                  />
-
-                  {/* Shutter Flash Effect */}
-                  {shutterFlash && (
-                    <div className="absolute inset-0 bg-white z-40 animate-out fade-out duration-200 pointer-events-none" />
-                  )}
-
-                  {/* Optical Lens Vignette & Grading Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40 pointer-events-none" />
-
-                  {/* 3. Rule of Thirds Grid Lines (Appears subtly on hover) */}
-                  <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 pointer-events-none opacity-20 group-hover/viewfinder:opacity-45 transition-opacity">
-                    <div className="border-r border-b border-white" />
-                    <div className="border-r border-b border-white" />
-                    <div className="border-b border-white" />
-                    <div className="border-r border-b border-white" />
-                    <div className="border-r border-b border-white" />
-                    <div className="border-b border-white" />
-                    <div className="border-r border-white" />
-                    <div className="border-r border-white" />
-                    <div className="" />
+                {/* 2. Interactive Before/After Split Viewer */}
+                <div
+                  ref={sliderContainerRef}
+                  onMouseDown={(e) => {
+                    setIsDraggingSlider(true);
+                    updateSliderPos(e.clientX);
+                  }}
+                  onMouseUp={() => setIsDraggingSlider(false)}
+                  onTouchStart={(e) => {
+                    if (e.touches[0]) updateSliderPos(e.touches[0].clientX);
+                  }}
+                  className="relative aspect-[16/10] w-full rounded-2xl overflow-hidden bg-black mt-3 border border-white/15 cursor-ew-resize group/slider"
+                >
+                  {/* Layer 1: RAW Flat Image (Full Background) */}
+                  <div className="absolute inset-0 w-full h-full">
+                    <img
+                      src={darkroomScenes[activeScene].url}
+                      alt="Ảnh RAW Gốc CLB LTD"
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover/slider:scale-102"
+                      style={{
+                        filter: "saturate(0.55) contrast(0.85) brightness(1.05)",
+                      }}
+                    />
+                    {/* Badge: RAW Right Side */}
+                    <div className="absolute top-3 right-3 z-10 px-2.5 py-1 rounded-xl bg-black/75 backdrop-blur-md border border-white/15 text-[10px] font-mono font-bold text-slate-300 shadow-lg">
+                      RAW CHƯA MÀU (S-LOG3)
+                    </div>
                   </div>
 
-                  {/* 4. Four Corner Framing Brackets */}
-                  <div className="absolute top-3 left-3 w-4 h-4 border-t-2 border-l-2 border-white/80 pointer-events-none" />
-                  <div className="absolute top-3 right-3 w-4 h-4 border-t-2 border-r-2 border-white/80 pointer-events-none" />
-                  <div className="absolute bottom-3 left-3 w-4 h-4 border-b-2 border-l-2 border-white/80 pointer-events-none" />
-                  <div className="absolute bottom-3 right-3 w-4 h-4 border-b-2 border-r-2 border-white/80 pointer-events-none" />
-
-                  {/* 5. DYNAMIC MOUSE-TRACKING AUTOFOCUS RETICLE [ + ] (ĐỈNH CAO TƯƠNG TÁC) */}
+                  {/* Layer 2: Color Graded / LUT Image (Clipped Left Layer) */}
                   <div
+                    className="absolute inset-0 w-full h-full pointer-events-none transition-none"
                     style={{
-                      left: `${focusPoint.x}%`,
-                      top: `${focusPoint.y}%`,
-                      transform: "translate(-50%, -50%)",
-                      transition: "left 0.08s ease-out, top 0.08s ease-out",
+                      clipPath: `polygon(0 0, ${sliderPos}% 0, ${sliderPos}% 100%, 0 100%)`,
                     }}
-                    className="absolute pointer-events-none z-20 flex flex-col items-center"
                   >
-                    <div className="relative w-12 h-12 border border-lime-400/90 rounded-lg flex items-center justify-center shadow-[0_0_12px_rgba(163,230,53,0.8)]">
-                      <div className="w-1.5 h-1.5 bg-lime-400 rounded-full animate-ping" />
-                      <span className="absolute -top-1 -left-1 w-2 h-2 border-t-2 border-l-2 border-lime-400" />
-                      <span className="absolute -top-1 -right-1 w-2 h-2 border-t-2 border-r-2 border-lime-400" />
-                      <span className="absolute -bottom-1 -left-1 w-2 h-2 border-b-2 border-l-2 border-lime-400" />
-                      <span className="absolute -bottom-1 -right-1 w-2 h-2 border-b-2 border-r-2 border-lime-400" />
+                    <img
+                      src={darkroomScenes[activeScene].url}
+                      alt="Ảnh Hậu Kỳ Màu Phim LTD"
+                      className="w-full h-full object-cover transition-all duration-300 group-hover/slider:scale-102"
+                      style={{
+                        filter: lutPresets[activePreset].filter,
+                      }}
+                    />
+                    {/* Badge: Graded Left Side */}
+                    <div className="absolute top-3 left-3 z-10 flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-cyan-950/85 backdrop-blur-md border border-cyan-400/40 text-[10px] font-mono font-bold text-cyan-300 shadow-lg">
+                      <Sparkles className="w-3 h-3 text-cyan-400" />
+                      <span>{lutPresets[activePreset].name.toUpperCase()}</span>
                     </div>
-                    <span className="mt-1 px-1.5 py-0.5 rounded text-[8px] font-mono font-bold bg-black/80 text-lime-300 border border-lime-400/40 whitespace-nowrap">
-                      AF-C EYE [LOCKED]
-                    </span>
                   </div>
 
-                  {/* Live Exposure Strip in Viewfinder bottom */}
-                  <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between text-[11px] font-mono font-bold text-white z-20 drop-shadow">
-                    <div className="flex items-center gap-3">
-                      <span className="text-cyan-300">
-                        {lensMode === "portrait"
-                          ? "f/1.4 GM · 85mm"
-                          : lensMode === "landscape"
-                          ? "f/8.0 G · 24mm"
-                          : "T2.0 CINE · 35mm"}
-                      </span>
-                      <span>
-                        {lensMode === "portrait"
-                          ? "1/1600s"
-                          : lensMode === "landscape"
-                          ? "1/250s"
-                          : "1/50s (180°)"}
-                      </span>
-                      <span className="text-amber-300">
-                        {lensMode === "portrait"
-                          ? "ISO 100"
-                          : lensMode === "landscape"
-                          ? "ISO 64"
-                          : "ISO 400"}
-                      </span>
+                  {/* Live Exposure & Lens Overlay at Bottom */}
+                  <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between text-[11px] font-mono font-bold text-white z-20 drop-shadow pointer-events-none">
+                    <div className="flex items-center gap-2 sm:gap-3 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-lg border border-white/10">
+                      <span className="text-cyan-300">{darkroomScenes[activeScene].gear}</span>
+                      <span className="hidden sm:inline text-slate-400">|</span>
+                      <span className="hidden sm:inline text-amber-300">{darkroomScenes[activeScene].exif}</span>
                     </div>
-                    <span className="text-emerald-400">EV +0.0</span>
+                    <div className="px-2 py-0.5 rounded bg-black/60 backdrop-blur-md text-emerald-400 border border-emerald-400/30 text-[10px]">
+                      RAW 14-BIT
+                    </div>
+                  </div>
+
+                  {/* 3. Draggable Neon Divider Line & Handle */}
+                  <div
+                    className="absolute top-0 bottom-0 z-30 pointer-events-none transition-none"
+                    style={{ left: `${sliderPos}%` }}
+                  >
+                    {/* Vertical Glow Line */}
+                    <div className="absolute inset-y-0 -left-[1px] w-[2px] bg-white shadow-[0_0_12px_rgba(34,211,238,0.9)]" />
+
+                    {/* Central Circular Knob with Double Arrows */}
+                    <div className="absolute top-1/2 -left-5 -translate-y-1/2 w-10 h-10 rounded-full bg-[#0a121d] border-2 border-cyan-400 shadow-[0_0_16px_rgba(34,211,238,0.7)] flex items-center justify-center text-cyan-300 font-bold text-xs pointer-events-auto cursor-ew-resize hover:scale-110 active:scale-95 transition-transform">
+                      <div className="flex items-center gap-0.5 tracking-tighter">
+                        <span className="text-[10px]">◀</span>
+                        <span className="w-0.5 h-3 bg-cyan-400 rounded-full" />
+                        <span className="text-[10px]">▶</span>
+                      </div>
+                    </div>
+
+                    {/* Floating percentage label */}
+                    <div className="absolute -top-1 left-1/2 -translate-x-1/2 -translate-y-full px-2 py-0.5 rounded bg-black/90 border border-cyan-400/50 text-[9px] font-mono text-cyan-300 whitespace-nowrap shadow-md">
+                      {Math.round(sliderPos)}%
+                    </div>
                   </div>
                 </div>
 
-                {/* 3. Interactive Photography Controls Bar (Dưới Viewfinder) */}
-                <div className="pt-3.5 space-y-3">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    {/* Lens Mode Switcher Pills */}
-                    <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-white/5 border border-white/10 text-xs">
-                      <button
-                        onClick={() => setLensMode("portrait")}
-                        className={`px-3 py-1.5 rounded-xl font-bold transition-all ${
-                          lensMode === "portrait"
-                            ? "bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/30"
-                            : "text-slate-400 hover:text-white"
-                        }`}
-                      >
-                        🎯 f/1.4 Chân dung
-                      </button>
-                      <button
-                        onClick={() => setLensMode("landscape")}
-                        className={`px-3 py-1.5 rounded-xl font-bold transition-all ${
-                          lensMode === "landscape"
-                            ? "bg-amber-400 text-slate-950 shadow-md shadow-amber-400/30"
-                            : "text-slate-400 hover:text-white"
-                        }`}
-                      >
-                        🌅 f/8 Phong cảnh
-                      </button>
-                      <button
-                        onClick={() => setLensMode("cinema")}
-                        className={`px-3 py-1.5 rounded-xl font-bold transition-all ${
-                          lensMode === "cinema"
-                            ? "bg-emerald-400 text-slate-950 shadow-md shadow-emerald-400/30"
-                            : "text-slate-400 hover:text-white"
-                        }`}
-                      >
-                        🎬 24fps Điện ảnh
-                      </button>
+                {/* 3. Interactive LUT Preset Buttons Bar */}
+                <div className="pt-4 space-y-3">
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[11px] font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                        <Palette className="w-3.5 h-3.5 text-cyan-400" />
+                        Chọn Bộ Lọc Màu Hậu Kỳ (LUT):
+                      </span>
+                      <span className="text-[10px] text-cyan-400 font-mono">
+                        {lutPresets[activePreset].desc}
+                      </span>
                     </div>
 
-                    {/* Tactile Camera Shutter Button */}
-                    <button
-                      onClick={handleTriggerShutter}
-                      className="embers-btn flex items-center gap-2 px-4 py-2 rounded-2xl bg-gradient-to-r from-red-600 via-rose-500 to-amber-500 hover:from-red-500 hover:to-amber-400 text-white font-extrabold text-xs shadow-lg shadow-rose-500/30 active:scale-95 transition-all"
-                      title="Nhấn để chụp thử và trải nghiệm hiệu ứng flash màn trập"
-                    >
-                      <Camera className="w-4 h-4" />
-                      <span>Bấm Chụp Thử</span>
-                    </button>
+                    {/* Preset Grid Buttons */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      {(Object.keys(lutPresets) as Array<keyof typeof lutPresets>).map((key) => {
+                        const preset = lutPresets[key];
+                        const isActive = activePreset === key;
+                        return (
+                          <button
+                            key={key}
+                            onClick={() => setActivePreset(key)}
+                            className={`flex items-center gap-2 p-2 rounded-xl border text-xs font-bold transition-all text-left ${
+                              isActive
+                                ? "bg-cyan-500/15 border-cyan-400 text-white shadow-md shadow-cyan-500/20"
+                                : "bg-white/5 border-white/10 text-slate-300 hover:text-white hover:bg-white/10"
+                            }`}
+                          >
+                            <span
+                              className="w-2.5 h-2.5 rounded-full shrink-0 shadow-sm"
+                              style={{ backgroundColor: preset.color }}
+                            />
+                            <span className="truncate">{preset.name}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
 
-                  {/* Mode explanation label */}
-                  <div className="flex items-center justify-between text-[11px] text-slate-400 px-1 font-mono">
-                    <span>
-                      {lensMode === "portrait"
-                        ? "✨ Chế độ chân dung: Xóa phông mượt mà với khẩu độ f/1.4"
-                        : lensMode === "landscape"
-                        ? "✨ Chế độ phong cảnh: Siêu sắc nét từ tiền cảnh đến vô cực"
-                        : "✨ Chế độ điện ảnh: Chuẩn 24fps cinematic với tỷ lệ màn ảnh rộng"}
-                    </span>
-                    <span className="text-cyan-400 font-bold">Rê chuột để dò nét 3D</span>
+                  {/* 4. Scene Switcher & Interactive Prompt */}
+                  <div className="pt-2 flex flex-wrap items-center justify-between gap-2 border-t border-white/10 text-xs">
+                    {/* Scene Buttons */}
+                    <div className="flex items-center gap-1.5 p-1 rounded-xl bg-white/5 border border-white/10">
+                      {darkroomScenes.map((scene, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => setActiveScene(idx)}
+                          className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all ${
+                            activeScene === idx
+                              ? "bg-white text-slate-950 font-bold shadow-sm"
+                              : "text-slate-400 hover:text-white"
+                          }`}
+                        >
+                          {scene.title}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Instruction Tag */}
+                    <div className="text-[11px] text-cyan-400 font-mono font-semibold flex items-center gap-1">
+                      <span>↔ Kéo thanh trượt để so sánh</span>
+                    </div>
                   </div>
                 </div>
 
-                {/* 4. Floating Holographic Match Ring (Image 3 style) */}
+                {/* 5. Floating Holographic Quality Badge */}
                 <div className="absolute -top-4 -right-4 p-3 rounded-2xl bg-[#09101a]/95 border border-cyan-400/40 shadow-xl shadow-cyan-500/25 flex items-center gap-2.5 backdrop-blur-md">
                   <div className="relative w-10 h-10 flex items-center justify-center">
                     <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
@@ -517,18 +575,21 @@ export default function DashboardPage() {
                   </div>
                   <div>
                     <span className="text-[10px] text-slate-400 font-bold block uppercase tracking-wider">
-                      Độ Nét
+                      Màu Chuẩn Gu
                     </span>
-                    <span className="text-xs font-extrabold text-white">Full-Frame 61MP</span>
+                    <span className="text-xs font-extrabold text-white">LTD Cinematic LUT</span>
                   </div>
                 </div>
 
-                {/* 5. Floating Bottom-Left Color Grade LUT pill */}
+                {/* 6. Floating Bottom-Left Color Profile Pill */}
                 <div className="absolute -bottom-4 -left-4 hidden sm:flex items-center gap-2 px-3 py-2 rounded-2xl bg-[#09101a]/95 border border-amber-400/40 shadow-xl shadow-amber-500/15 backdrop-blur-md">
-                  <div className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse" />
+                  <div
+                    className="w-2.5 h-2.5 rounded-full animate-pulse"
+                    style={{ backgroundColor: lutPresets[activePreset].color }}
+                  />
                   <div className="text-[11px] font-mono">
-                    <span className="text-slate-400">Color Profile: </span>
-                    <span className="font-bold text-amber-300">LTD Golden Hour LUT</span>
+                    <span className="text-slate-400">Đang xem: </span>
+                    <span className="font-bold text-amber-300">{lutPresets[activePreset].name}</span>
                   </div>
                 </div>
               </div>
