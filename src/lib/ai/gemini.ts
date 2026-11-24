@@ -11,8 +11,8 @@ THÔNG TIN VỀ CLB NHIẾP ẢNH LTD:
 - Nhận diện thương hiệu: Deep Navy, Modern Slate và Cyan/Teal hiện đại mang phong cách Creative Studio SaaS.
 `;
 
-export function getGeminiClient(apiKeyOverride?: string): GoogleGenAI {
-  const key = apiKeyOverride?.trim() || process.env.GEMINI_API_KEY?.trim();
+export function getGeminiClient(_apiKeyOverride?: string): GoogleGenAI {
+  const key = process.env.GEMINI_API_KEY?.trim();
   if (!key) {
     throw new Error(
       "Chưa cấu hình Google Gemini API Key! Vui lòng cấu hình GEMINI_API_KEY trong file .env.local hoặc nhập API Key trong trang Cài Đặt (/settings)."

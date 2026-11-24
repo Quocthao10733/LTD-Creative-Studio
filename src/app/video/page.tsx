@@ -125,8 +125,6 @@ export default function VideoEditorPage() {
     setErrorMessage(null);
 
     try {
-      const apiKeyOverride = localStorage.getItem("LTD_GEMINI_API_KEY") || undefined;
-
       const res = await fetch("/api/video/generate-edl", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -135,7 +133,6 @@ export default function VideoEditorPage() {
           prompt: directorPrompt,
           aspectRatio: selectedRatio,
           targetDuration,
-          apiKeyOverride,
         }),
       });
 

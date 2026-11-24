@@ -161,7 +161,6 @@ export default function ContentWriterPage() {
     setIsGenerating(true);
 
     try {
-      const apiKeyOverride = localStorage.getItem("LTD_GEMINI_API_KEY") || undefined;
       const res = await fetch("/api/ai/writer", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -171,7 +170,6 @@ export default function ContentWriterPage() {
           tone,
           topic: topic.trim(),
           facts: `${facts.trim()} | Đối tượng: ${targetAudience} | Độ dài: ${lengthPref}`,
-          apiKeyOverride,
         }),
       });
 
@@ -277,7 +275,6 @@ export default function ContentWriterPage() {
     setVersionHistory((prev) => [{ hook: prevHook, body: prevBody }, ...prev.slice(0, 9)]);
 
     try {
-      const apiKeyOverride = localStorage.getItem("LTD_GEMINI_API_KEY") || undefined;
       const res = await fetch("/api/ai/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -287,7 +284,6 @@ export default function ContentWriterPage() {
           platform,
           tone,
           userMessage: msgToSend,
-          apiKeyOverride,
         }),
       });
 

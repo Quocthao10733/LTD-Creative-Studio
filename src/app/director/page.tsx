@@ -60,15 +60,12 @@ export default function DirectorPage() {
     setIsGenerating(true);
 
     try {
-      const apiKeyOverride = localStorage.getItem("LTD_GEMINI_API_KEY") || undefined;
-
       const res = await fetch("/api/ai/director", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           topic: topic.trim(),
           focusArea: focusArea === "all" ? "" : focusArea,
-          apiKeyOverride,
         }),
       });
 

@@ -45,8 +45,6 @@ export default function SettingsPage() {
   const [changePassSubmitting, setChangePassSubmitting] = React.useState<boolean>(false);
 
   // Settings State
-  const [apiKey, setApiKey] = React.useState("");
-  const [showKey, setShowKey] = React.useState(false);
   const [selectedModel, setSelectedModel] = React.useState("gemini-3.5-flash-lite");
   const [isSaved, setIsSaved] = React.useState(false);
 
@@ -75,15 +73,6 @@ export default function SettingsPage() {
 
   React.useEffect(() => {
     checkAuth();
-
-    const saved = localStorage.getItem("LTD_GEMINI_API_KEY");
-    if (saved) {
-      setApiKey(saved);
-    } else if (process.env.NEXT_PUBLIC_GEMINI_API_KEY) {
-      setApiKey(process.env.NEXT_PUBLIC_GEMINI_API_KEY);
-    } else {
-      setApiKey("");
-    }
 
     const cfg = getFirebaseConfig();
     if (cfg) {
@@ -181,12 +170,6 @@ export default function SettingsPage() {
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    if (apiKey.trim()) {
-      localStorage.setItem("LTD_GEMINI_API_KEY", apiKey.trim());
-    } else {
-      localStorage.removeItem("LTD_GEMINI_API_KEY");
-    }
-
     saveFirebaseConfig(fbConfig);
     setIsSaved(true);
     setTimeout(() => setIsSaved(false), 2500);
@@ -380,24 +363,11 @@ export default function SettingsPage() {
           </div>
 
           <p className="text-xs text-slate-500 leading-relaxed">
-            API Key được lưu trữ bảo mật trên server (.env.local) và trong trình duyệt của bạn. Để an toàn, khóa sẽ được ẩn dạng chấm mật khẩu.
+            API key chỉ được cấu hình trên server bằng biến <code>GEMINI_API_KEY</code>. Không nhập hoặc lưu khóa trong trình duyệt.
           </p>
 
-          <div className="relative">
-            <input
-              type={showKey ? "text" : "password"}
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              placeholder="AIzaSy..."
-              className="w-full px-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs font-mono text-slate-900 focus:outline-none focus:border-blue-500"
-            />
-            <button
-              type="button"
-              onClick={() => setShowKey(!showKey)}
-              className="absolute right-3.5 top-3 text-slate-400 hover:text-slate-600 cursor-pointer"
-            >
-              {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            </button>
+          <div className="rounded-2xl bg-slate-50 border border-slate-200 px-4 py-3 text-xs font-mono text-slate-500">
+            GEMINI_API_KEY=&lt;khóa mới trên máy chủ&gt;
           </div>
         </div>
 
