@@ -1,4 +1,4 @@
-export type ContentPlatform = "facebook" | "tiktok";
+export type ContentPlatform = "facebook" | "tiktok" | "instagram" | "threads" | "website";
 
 export type ContentStatus = "draft" | "in_review" | "approved" | "published";
 
@@ -26,6 +26,10 @@ export interface GenerateContentRequest {
   tone: string;
   topic: string;
   facts?: string;
+  targetAudience?: string;
+  lengthPref?: "short" | "medium" | "long";
+  creativeAngle?: string;
+  recentHooks?: string[];
   model?: string;
 }
 

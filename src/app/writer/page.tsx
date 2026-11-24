@@ -33,6 +33,8 @@ import {
 } from "lucide-react";
 import { GenerateContentResponse } from "@/lib/types/content";
 import { useAuth } from "@/context/auth-context";
+import { getStoredGeminiModel } from "@/lib/ai/models";
+import { getNextWritingAngle } from "@/lib/ai/writing-angles";
 
 const PLATFORMS = [
   { id: "facebook", name: "Facebook", icon: "f", desc: "Fanpage & Nhóm cộng đồng" },
@@ -43,6 +45,7 @@ const PLATFORMS = [
 ];
 
 const POST_TYPES = [
+  { id: "auto", name: "AI tự chọn cấu trúc phù hợp" },
   { id: "workshop_recap", name: "Recap Workshop / Phototrip" },
   { id: "photo_caption", name: "Caption Bộ Ảnh Nghệ Thuật" },
   { id: "member_recruitment", name: "Thông Báo Tuyển Thành Viên" },
@@ -51,6 +54,7 @@ const POST_TYPES = [
 ];
 
 const TONES = [
+  { id: "conversational", name: "Đời thường, như thành viên kể" },
   { id: "artistic", name: "Nghệ thuật & Tinh tế" },
   { id: "youthful", name: "Trẻ trung & Năng động (Gen Z)" },
   { id: "technical", name: "Chuyên môn & Chuẩn xác" },
@@ -65,18 +69,19 @@ interface HistoryItem {
   postType: string;
   content: GenerateContentResponse;
   timestamp: string;
+  modelUsed?: string;
 }
 
 export default function ContentWriterPage() {
   const { profile } = useAuth();
   const [platform, setPlatform] = React.useState("facebook");
-  const [postType, setPostType] = React.useState("workshop_recap");
-  const [tone, setTone] = React.useState("artistic");
+  const [postType, setPostType] = React.useState("auto");
+  const [tone, setTone] = React.useState("conversational");
   const [topic, setTopic] = React.useState("");
   const [targetAudience, setTargetAudience] = React.useState("Học sinh, sinh viên yêu thích nhiếp ảnh");
   const [facts, setFacts] = React.useState("");
   const [lengthPref, setLengthPref] = React.useState<"short" | "medium" | "long">("medium");
-  const [includeAuthorSignature, setIncludeAuthorSignature] = React.useState(true);
+  const [includeAuthorSignature, setIncludeAuthorSignature] = React.useState(false);
 
   const [isGenerating, setIsGenerating] = React.useState(false);
   const [isSaving, setIsSaving] = React.useState(false);
@@ -86,6 +91,7 @@ export default function ContentWriterPage() {
 
   // Editable output state
   const [output, setOutput] = React.useState<GenerateContentResponse | null>(null);
+  const [outputModel, setOutputModel] = React.useState<string | null>(null);
   const [editableBody, setEditableBody] = React.useState("");
   const [editableHook, setEditableHook] = React.useState("");
 
@@ -137,7 +143,7 @@ export default function ContentWriterPage() {
     }
   }, []);
 
-  const saveToHistory = (res: GenerateContentResponse) => {
+  const saveToHistory = (res: GenerateContentResponse, modelUsed?: string) => {
     const newItem: HistoryItem = {
       id: Date.now().toString(),
       topic: topic.trim(),
@@ -145,6 +151,7 @@ export default function ContentWriterPage() {
       postType,
       content: res,
       timestamp: new Date().toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }) + ", " + new Date().toLocaleDateString("vi-VN"),
+      modelUsed,
     };
     const updated = [newItem, ...history.slice(0, 19)];
     setHistory(updated);
@@ -169,7 +176,15 @@ export default function ContentWriterPage() {
           postType,
           tone,
           topic: topic.trim(),
-          facts: `${facts.trim()} | Đối tượng: ${targetAudience} | Độ dài: ${lengthPref}`,
+          facts: facts.trim(),
+          targetAudience,
+          lengthPref,
+          creativeAngle: getNextWritingAngle(),
+          recentHooks: history
+            .filter((item) => item.platform === platform)
+            .slice(0, 5)
+            .map((item) => item.content.hook),
+          model: getStoredGeminiModel(),
         }),
       });
 
@@ -187,10 +202,12 @@ export default function ContentWriterPage() {
           }
         }
         const personalizedData = { ...json.data, body: finalBody };
+        const modelUsed = typeof json.modelUsed === "string" ? json.modelUsed : undefined;
         setOutput(personalizedData);
+        setOutputModel(modelUsed || null);
         setEditableHook(json.data.hook);
         setEditableBody(finalBody);
-        saveToHistory(personalizedData);
+        saveToHistory(personalizedData, modelUsed);
       } else {
         setErrorMessage(json.error || "Không thể tạo nội dung. Vui lòng thử lại!");
       }
@@ -284,12 +301,14 @@ export default function ContentWriterPage() {
           platform,
           tone,
           userMessage: msgToSend,
+          model: getStoredGeminiModel(),
         }),
       });
 
       const json = await res.json();
       if (json.success && json.data) {
         const { reply, revisedHook, revisedBody, revisedHashtags } = json.data;
+        setOutputModel(typeof json.modelUsed === "string" ? json.modelUsed : null);
 
         // If output was not open, initialize output
         if (!output) {
@@ -469,6 +488,9 @@ export default function ContentWriterPage() {
                   </option>
                 ))}
               </select>
+              <p className="text-[10px] text-slate-400">
+                Chế độ tự chọn luân phiên góc viết và tránh lặp hook gần đây.
+              </p>
             </div>
 
             {/* 3. Giọng Văn (Tone) */}
@@ -522,7 +544,7 @@ export default function ContentWriterPage() {
                 rows={2}
                 value={facts}
                 onChange={(e) => setFacts(e.target.value)}
-                placeholder="Nhập dữ kiện có thật: Ngày 15/11/2026, 09:00 - 11:00 tại Hội trường A. (Nếu để trống, AI sẽ cảnh báo cần xác minh)"
+                placeholder="Ghi chất liệu thật: chuyện gì đã xảy ra, chi tiết nào đáng nhớ, câu nói nào đã được nói, điều gì cần thông báo. Không cần có đủ ngày giờ nếu bài không cần."
                 className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 resize-none"
               />
             </div>
@@ -799,6 +821,13 @@ export default function ContentWriterPage() {
                     <div className="flex items-center gap-1.5">
                       <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-50 text-blue-600 uppercase">
                         {platform}
+                      </span>
+                      <span className={`px-2.5 py-1 rounded-full text-[10px] font-semibold ${
+                        outputModel
+                          ? "bg-emerald-50 text-emerald-700"
+                          : "bg-amber-50 text-amber-700"
+                      }`}>
+                        {outputModel ? `Gemini · ${outputModel}` : "Model chưa được xác nhận"}
                       </span>
                       <span className="text-xs text-slate-400">·</span>
                       <span className="text-xs text-slate-500 font-medium">
@@ -1133,6 +1162,7 @@ export default function ContentWriterPage() {
                       key={item.id}
                       onClick={() => {
                         setOutput(item.content);
+                        setOutputModel(item.modelUsed || null);
                         setEditableHook(item.content.hook);
                         setEditableBody(item.content.body);
                         setTopic(item.topic);

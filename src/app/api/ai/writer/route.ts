@@ -1,82 +1,33 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getGeminiClient, LTD_KNOWLEDGE_BASE, LTD_EXPERT_SKILLS_PROMPT } from "@/lib/ai/gemini";
+import { getGeminiClient, LTD_KNOWLEDGE_BASE } from "@/lib/ai/gemini";
+import { resolveGeminiModel } from "@/lib/ai/models";
+import { loadSkillGuidance } from "@/lib/ai/skills";
+import { isWritingAngleId, WRITING_ANGLES } from "@/lib/ai/writing-angles";
 import { GenerateContentRequest, GenerateContentResponse } from "@/lib/types/content";
 
-function getMockAiResponse(
-  platform: string,
-  postType: string,
-  tone: string,
-  topic: string,
-  facts?: string
-): GenerateContentResponse {
-  if (platform === "tiktok") {
-    return {
-      hook: `Đừng bấm máy nếu bạn chưa biết mẹo này khi chụp ngược sáng! 📸`,
-      body: `[0-3s] [Cận cảnh bàn tay xoay nhẹ vòng khẩu độ trên ống kính Sony 85mm f/1.4, tiếng click màn trập vang lên đanh giòn]
-"Bạn thường nghĩ chụp ngược sáng sẽ làm mặt mẫu bị tối đen? Thử ngay cách đo sáng này của Ban Kỹ Thuật LTD."
-
-[3-12s] [Chuyển cảnh B-roll: So sánh ảnh mẫu bị đen mặt vs ảnh bù sáng đo sáng điểm (Spot Metering)]
-"Chuyển chế độ đo sáng sang Spot Metering, khóa sáng vào gò má mẫu. Bật đèn flash nhẹ hoặc dùng hắt sáng bạc ở góc 45 độ."
-
-[12-25s] [Góc máy POV người thứ nhất lia máy bắt trọn tia nắng xiên qua kẽ tóc mẫu]
-"Ánh sáng ven sẽ tách hoàn toàn chủ thể khỏi hậu cảnh, tạo nên vầng hào quang cinematic mà không cần kéo màu quá nhiều."
-
-[25-35s] [Khoảnh khắc các bạn trẻ CLB LTD vừa chụp xong cùng xem lại ảnh trên màn hình máy ảnh, cười rạng rỡ]
-"Những mẹo thực chiến này đều được tụi mình đúc kết từ các buổi phototrip cuối tuần của CLB Nhiếp Ảnh LTD."
-
-[35-40s] [CTA]
-"Bạn đang dùng body máy gì? Để lại một bình luận, tụi mình sẽ gợi ý thiết lập đo sáng chuẩn nhất cho bạn!"`,
-      hashtags: [
-        "#CLBNhiepAnhLTD",
-        "#LongThanhDigital",
-        "#MeoChupAnh",
-        "#SonyAlpha",
-        "#NhiepAnhTre",
-        "#PhototripLongThanh",
-      ],
-      visualTips:
-        "Khung hình dọc 9:16. Ánh sáng vàng xiên lúc 16h30 (Golden hour). Âm thanh SFX tiếng màn trập kết hợp beat Lo-Fi acoustic êm dịu.",
-      factsChecklist: [
-        "Kỹ thuật chuẩn: Đo sáng điểm (Spot Metering) và kiểm soát ánh sáng ven (Rim Light).",
-        facts ? `Dữ kiện bổ sung: ${facts}` : "Đã kiểm chứng: Phù hợp cho máy ảnh Sony, Canon, Fujifilm.",
-      ],
-    };
-  }
-
-  // Facebook post chuẩn Copywriting chuyên gia
-  return {
-    hook: `Buổi sáng sớm ở bến đò Long Thành, tiếng màn trập vang lên giữa lớp sương mỏng... 📷`,
-    body: `Có những ngày tụi mình thức dậy từ 5 giờ sáng, ôm balo máy ảnh chạy dọc theo những con đường ven sông Đồng Nai. Không ồn ào, không kịch bản cầu kỳ, chỉ có niềm háo hức bắt trọn tia nắng đầu tiên xuyên qua tán cây.
-
-Đó là cách mà CLB Nhiếp Ảnh Long Thành (LTD) cùng nhau lớn lên qua từng khung hình.
-
-Trong buổi sinh hoạt và sáng tác về chủ đề "${topic}":
-• Ban Kỹ Thuật hướng dẫn các bạn Gen mới cách làm chủ khẩu độ lớn f/1.4 để làm nổi bật chủ thể tự nhiên nhất.
-• Ban Truyền Thông ghi lại từng khoảnh khắc hậu trường mộc mạc — những nụ cười, những lần ngồi bệt xuống đất canh góc máy lạ.
-
-${facts ? `📌 Lưu ý xác nhận: ${facts}\n` : ""}Nhiếp ảnh với tụi mình đơn giản là giữ lại những gì chân thật nhất của tuổi trẻ nơi mảnh đất Long Thành này.
-
-Bạn có cùng đam mê bấm máy không? Nhắn tin cho LTD hoặc để lại bình luận để cùng tham gia buổi phototrip tiếp theo nhé!`,
-    hashtags: [
-      "#CLBNhiepAnhLTD",
-      "#LongThanhDigital",
-      "#NhiepAnhTuoiTre",
-      "#SonyVietnam",
-      "#ThanhXuanLongThanh",
-    ],
-    visualTips:
-      "Bộ ảnh album 4 tấm tỷ lệ 4:5. Tấm 1: Toàn cảnh mặt sông mờ sương. Tấm 2-3: Cận cảnh thành viên đang chỉnh máy ảnh. Tấm 4: Ảnh chụp tập thể tràn đầy năng lượng.",
-    factsChecklist: [
-      "Xác thực: Hoạt động nội bộ CLB Nhiếp Ảnh Long Thành Digital (LTD).",
-      facts ? `Dữ kiện kèm theo: ${facts}` : "Lưu ý: Luôn kiểm tra lịch dự báo thời tiết trước ngày phototrip.",
-    ],
-  };
-}
+const LTD_WRITING_STYLE_REFERENCE = `
+🌷 [RECAP] NHỮNG SẮC HOA – NGÀN LỜI TRI ÂN
+Mỗi đóa hoa là một lời cảm ơn, mỗi tác phẩm là một tình cảm được gửi gắm đến những người lái đò thầm lặng.
+Hòa trong không khí chào mừng Ngày Nhà giáo Việt Nam 20/11, hoạt động cắm hoa đã mang đến những khoảnh khắc thật đẹp. Từ những đôi tay còn vụng về đến sự tỉ mỉ trong từng cách sắp đặt, mỗi giỏ hoa đều chứa đựng sự sáng tạo, tinh thần đồng đội và tình cảm chân thành mà các bạn học sinh muốn gửi đến thầy cô.
+Mỗi tác phẩm mang một sắc màu riêng, nhưng tất cả đều chung một ý nghĩa: tri ân những người đã luôn tận tâm dìu dắt và đồng hành cùng chúng ta trên hành trình trưởng thành.
+💐 Nhân ngày Nhà giáo Việt Nam 20/11, Long Thành Digital kính chúc quý thầy cô luôn mạnh khỏe, hạnh phúc và giữ mãi ngọn lửa nhiệt huyết với sự nghiệp trồng người!
+`;
 
 export async function POST(request: NextRequest) {
   try {
     const body: GenerateContentRequest = await request.json();
-    const { platform, postType, tone, topic, facts, model } = body;
+    const {
+      platform,
+      postType,
+      tone,
+      topic,
+      facts,
+      targetAudience,
+      lengthPref,
+      creativeAngle,
+      recentHooks = [],
+      model,
+    } = body;
 
     if (!topic || !topic.trim()) {
       return NextResponse.json(
@@ -86,89 +37,118 @@ export async function POST(request: NextRequest) {
     }
 
     const key = process.env.GEMINI_API_KEY?.trim();
+    if (!key) {
+      return NextResponse.json(
+        { success: false, error: "Chưa cấu hình Gemini API Key. Vui lòng thêm khóa trong Cài đặt để tạo nội dung." },
+        { status: 503 }
+      );
+    }
 
-    // If API key is available, use real Gemini client
-    if (key) {
-      try {
-        const ai = getGeminiClient();
-        const selectedModel =
-          model === "gemini-2.5-flash" || !model ? "gemini-3.5-flash-lite" : model;
+    const selectedModel = resolveGeminiModel(model);
+    if (!selectedModel) {
+      return NextResponse.json(
+        { success: false, error: "Mô hình Gemini không được hỗ trợ. Hãy chọn một mô hình trong Cài đặt." },
+        { status: 400 }
+      );
+    }
 
-        const systemPrompt = `
-Bạn là Chuyên gia Cấp Cao về Content & Copywriting của CLB Nhiếp ảnh LTD (Long Thành Digital Photo Club), được đào tạo bài bản từ 53 kỹ năng Marketing & Sáng tạo hàng đầu thế giới.
+    if (!isWritingAngleId(creativeAngle)) {
+      return NextResponse.json(
+        { success: false, error: "Góc viết không hợp lệ. Vui lòng tải lại trang và thử lại." },
+        { status: 400 }
+      );
+    }
+
+    const skillNames = platform === "website"
+      ? ["copywriting"] as const
+      : platform === "tiktok"
+        ? ["social", "video"] as const
+        : ["social"] as const;
+    const skillGuidance = await loadSkillGuidance(
+      skillNames,
+      platform === "tiktok"
+        ? undefined
+        : { social: ["No AI Tells", "Content Ideas by Situation"] }
+    );
+    const ai = getGeminiClient();
+    const angle = WRITING_ANGLES.find((item) => item.id === creativeAngle);
+    const recentHookList = Array.isArray(recentHooks)
+      ? recentHooks.filter((hook): hook is string => typeof hook === "string").slice(0, 5)
+      : [];
+
+    const systemPrompt = `
+Bạn là một thành viên Ban Truyền thông LTD đang viết cho người theo dõi Fanpage, không phải agency viết quảng cáo.
 
 ${LTD_KNOWLEDGE_BASE}
 
-${LTD_EXPERT_SKILLS_PROMPT}
+HƯỚNG DẪN SKILL ĐƯỢC NẠP TỪ REPO:
+${skillGuidance}
 
-QUY TẮC BẮT BUỘC KHI VIẾT BÀI:
-1. TUYỆT ĐỐI KHÔNG DÙNG CÁC MẪU CÂU CŨ RÍCH CỦA AI: Cấm viết "Đây không chỉ là X mà là Y", cấm từ sáo rỗng (đột phá, toàn diện, nâng tầm).
-2. Hãy đưa chi tiết thực tế về máy ảnh, ánh sáng, góc chụp và cảm xúc của các bạn trẻ Long Thành vào bài viết.
-3. KHÔNG ĐƯỢC TỰ BỊA ĐẶT ngày tháng, giờ giấc, địa điểm nếu người dùng chưa cung cấp.
-4. Trả về DUY NHẤT một JSON hợp lệ (không kèm markdown \`\`\`json) theo định dạng:
+MẪU GIỌNG LTD DO NGƯỜI DÙNG CHỌN:
+${LTD_WRITING_STYLE_REFERENCE}
+Chỉ học giọng ấm áp, cách nói gần gũi, đoạn văn tự nhiên và cách gắn thông điệp với hoạt động thật. Đây không phải nguồn dữ kiện cho bài mới. Không chép lại câu chữ, cấu trúc lặp hoặc thông tin về hoa, thầy cô, ngày 20/11.
+
+ÁP DỤNG:
+- Viết đúng nền tảng, định dạng, đối tượng, giọng văn và độ dài người dùng yêu cầu.
+- Chỉ xem phần "Dữ kiện đã cung cấp" là sự thật. Không tự tạo địa điểm, sự kiện, lịch, thành viên, thiết bị đang sở hữu, số liệu hoặc trải nghiệm của CLB.
+- Dùng góc viết được yêu cầu như điểm xuất phát, không ép vào đó nếu không hợp dữ kiện.
+- Khi loại nội dung là "auto", tự chọn cấu trúc phù hợp chủ đề. Đừng mặc định viết recap, kể chuyện tuổi trẻ hoặc kết bằng lời mời inbox.
+- Không lặp công thức "hook gây tò mò -> kể cảnh đẹp -> rút ra bài học -> CTA". Không mở mọi bài bằng câu hỏi, dấu ba chấm, một khung cảnh điện ảnh hoặc "Có những...".
+- Giọng "Đời thường": câu chữ như người trong CLB nói với người đọc quen; thẳng, giản dị, không cố làm văn. Tránh các cụm "tụi mình cùng nhau lớn lên", "giữ lại thanh xuân", "chạm đến cảm xúc", "mỗi cú bấm".
+- Nếu thiếu dữ kiện, viết ngắn và trung thực thay vì làm bài nghe có vẻ giàu trải nghiệm. Nêu điều cần bổ sung trong factsChecklist.
+- Không dùng cảnh máy ảnh, ánh sáng, địa điểm hay cảm xúc trang trí nếu chúng không giúp thông điệp. Không nhồi emoji, hashtag hoặc CTA.
+- Độ dài Facebook: short 40-80 từ, medium 80-140 từ, long 140-220 từ. Đừng kéo dài bài để lấp chỉ tiêu.
+- Trước khi trả lời, tự kiểm tra: cấu trúc có khác các hook gần đây không; người thật có nói câu này thành tiếng không; có câu nào chỉ để nghe "hay" mà không thêm thông tin không. Sửa hoặc bỏ câu đó.
+- Với kịch bản video ngắn, hook phải gắn với chủ đề; phân cảnh/voice-over cần quay được và không khẳng định điều chưa được cung cấp.
+- Trả về DUY NHẤT JSON hợp lệ theo schema, không kèm markdown:
 {
-  "hook": "Tiêu đề hoặc Hook thu hút trong 3 giây đầu",
-  "body": "Nội dung bài viết hoàn chỉnh, nhịp điệu tự nhiên, ngắt dòng thoáng đãng",
-  "hashtags": ["#CLBNhiepAnhLTD", "#..."],
-  "visualTips": "Gợi ý ảnh chụp hoặc góc quay video chi tiết",
-  "factsChecklist": ["Dữ kiện đã xác nhận: ...", "Dữ kiện cần xác minh: ..."]
+  "hook": "Hook phù hợp định dạng",
+  "body": "Nội dung hoàn chỉnh; kịch bản video có mốc thời gian và hình ảnh khi phù hợp",
+  "hashtags": ["#..."],
+  "visualTips": "Gợi ý hình ảnh khả thi, không giả định thiết bị hoặc địa điểm",
+  "factsChecklist": ["Dữ kiện đã xác nhận: ...", "Cần bổ sung/xác minh: ..."]
 }
 `;
 
-        const userPrompt = `
-Tạo nội dung:
-- Nền tảng: ${platform}
-- Loại bài: ${postType}
-- Giọng văn: ${tone}
-- Chủ đề: ${topic}
-- Dữ kiện xác thực: ${facts?.trim() || "Chưa cung cấp"}
+    const userPrompt = `
+Nền tảng: ${platform}
+Loại nội dung: ${postType}
+Giọng văn: ${tone}
+Độ dài: ${lengthPref || "medium"}
+Đối tượng: ${targetAudience?.trim() || "Chưa xác định"}
+Chủ đề: ${topic.trim()}
+Dữ kiện đã cung cấp: ${facts?.trim() || "Không có"}
+Góc viết ưu tiên: ${angle?.instruction}
+Hook gần đây chỉ để tránh lặp (không sao chép): ${JSON.stringify(recentHookList)}
 `;
 
-        const response = await ai.models.generateContent({
-          model: selectedModel,
-          contents: userPrompt,
-          config: {
-            systemInstruction: systemPrompt,
-            temperature: 0.7,
-            responseMimeType: "application/json",
-          },
-        });
+    const response = await ai.models.generateContent({
+      model: selectedModel,
+      contents: userPrompt,
+      config: {
+        systemInstruction: systemPrompt,
+        temperature: 0.8,
+        responseMimeType: "application/json",
+      },
+    });
 
-        const responseText = response.text || "";
-        const cleaned = responseText.replace(/```json/g, "").replace(/```/g, "").trim();
-        const parsed: GenerateContentResponse = JSON.parse(cleaned);
+    const responseText = response.text || "";
+    const cleaned = responseText.replace(/```json/g, "").replace(/```/g, "").trim();
+    const parsed: GenerateContentResponse = JSON.parse(cleaned);
 
-        return NextResponse.json({
-          success: true,
-          data: parsed,
-          modelUsed: selectedModel,
-        });
-      } catch (geminiError: any) {
-        console.warn("Gemini call failed, falling back to smart studio generation:", geminiError.message);
-        // Fallback to high quality studio response
-        const fallback = getMockAiResponse(platform, postType, tone, topic, facts);
-        return NextResponse.json({
-          success: true,
-          data: fallback,
-          note: "Đã sử dụng bộ sinh mẫu tối ưu cho CLB LTD. Bạn có thể kiểm tra API Key trong Cài đặt.",
-        });
-      }
-    }
-
-    // No API key provided: use tailored LTD Studio intelligent generation
-    const mockData = getMockAiResponse(platform, postType, tone, topic, facts);
     return NextResponse.json({
       success: true,
-      data: mockData,
-      note: "Chế độ trải nghiệm LTD Studio. Để kích hoạt Gemini Live, hãy thêm API Key trong Cài Đặt.",
+      data: parsed,
+      modelUsed: selectedModel,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    console.error("Lỗi tạo nội dung AI:", error);
     return NextResponse.json(
       {
         success: false,
-        error: error.message || "Lỗi xử lý nội dung",
+        error: "Không thể tạo nội dung bằng Gemini. Vui lòng kiểm tra API Key, mô hình đã chọn hoặc thử lại.",
       },
-      { status: 500 }
+      { status: 502 }
     );
   }
 }

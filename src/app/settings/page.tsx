@@ -29,6 +29,12 @@ import {
   saveFirebaseConfig,
   FirebaseConfig,
 } from "@/lib/firebase";
+import {
+  GEMINI_MODEL_OPTIONS,
+  getStoredGeminiModel,
+  saveGeminiModel,
+  subscribeToGeminiModel,
+} from "@/lib/ai/models";
 
 export default function SettingsPage() {
   // Authentication State
@@ -47,7 +53,11 @@ export default function SettingsPage() {
   const [changePassSubmitting, setChangePassSubmitting] = React.useState<boolean>(false);
 
   // Settings State
-  const [selectedModel, setSelectedModel] = React.useState("gemini-3.5-flash-lite");
+  const selectedModel = React.useSyncExternalStore(
+    subscribeToGeminiModel,
+    getStoredGeminiModel,
+    getStoredGeminiModel
+  );
   const [isSaved, setIsSaved] = React.useState(false);
 
   // Gemini Server Configuration State
@@ -415,7 +425,7 @@ export default function SettingsPage() {
               </span>
             ) : (
               <span className="text-[10px] text-amber-600 dark:text-amber-400 font-bold bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 px-2.5 py-0.5 rounded-full flex items-center gap-1">
-                Chưa có khóa (Đang dùng dữ liệu mẫu)
+                Chưa có khóa (AI chưa khả dụng)
               </span>
             )}
           </div>
@@ -494,30 +504,13 @@ export default function SettingsPage() {
             </h3>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {[
-              {
-                id: "gemini-3.5-flash-lite",
-                name: "Gemini 3.5 Flash Lite",
-                desc: "Siêu tốc độ, độ trễ cực thấp, tối ưu cho caption bài đăng, hashtag & TikTok script.",
-                badge: "Khuyên dùng",
-              },
-              {
-                id: "gemini-3.8-flash",
-                name: "Gemini 3.8 Flash",
-                desc: "Thế hệ AI mới nhất, suy luận logic vượt trội và sáng tạo concept đột phá.",
-                badge: "Mới nhất",
-              },
-              {
-                id: "gemini-2.5-pro",
-                name: "Gemini 2.5 Pro",
-                desc: "Suy luận chuyên sâu, tối ưu cho lập kế hoạch chiến dịch và phân tích kịch bản video.",
-                badge: "Pro",
-              },
-            ].map((m) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {GEMINI_MODEL_OPTIONS.map((m) => (
               <div
                 key={m.id}
-                onClick={() => setSelectedModel(m.id)}
+                onClick={() => {
+                  saveGeminiModel(m.id);
+                }}
                 className={`p-4 rounded-2xl border text-left cursor-pointer transition-all flex flex-col justify-between ${
                   selectedModel === m.id
                     ? "border-blue-600 bg-blue-50/60 shadow-sm"

@@ -11,12 +11,16 @@
 
 ### 1. ✍️ AI Content Writer (`/writer`)
 - Tự động tạo bài đăng Facebook và kịch bản video ngắn TikTok (30-45s).
-- Tích hợp công nghệ chống bịa đặt dữ kiện (**Anti-Hallucination**): tự động chèn `[CẦN XÁC MINH]` nếu thiếu ngày/giờ/địa điểm.
+- Nạp hướng dẫn viết theo nền tảng từ các skill `social`, `video` và `copywriting`.
+- Mặc định luân phiên 10 góc viết, đổi cấu trúc theo chủ đề và tránh lặp các hook đã tạo gần đây trên trình duyệt.
+- Chỉ dùng dữ kiện người viết cung cấp; liệt kê thông tin cần bổ sung thay vì tự tạo ngày, địa điểm hoặc trải nghiệm.
 - Hỗ trợ Hook 3s giật tít, phân cảnh thời gian, bộ hashtags chuẩn SEO và gợi ý hình ảnh cho Ban Kỹ Thuật.
 - Chỉnh sửa trực tiếp, sao chép 1-click và lưu bài vào Thư viện CLB.
+- Cần cấu hình Gemini API Key; nếu API lỗi, giao diện báo lỗi thay vì hiển thị bài mẫu giả làm nội dung AI.
 
 ### 2. 💡 AI Creative Director (`/director`)
 - Brainstorm ý tưởng, xây dựng chiến dịch và lập kế hoạch nội dung.
+- Nạp hướng dẫn phù hợp từ `content-strategy`, `social` và `video` để tạo concept/shotlist.
 - Phân tích chi tiết: Big Idea, Khán giả mục tiêu, **Shot list khung hình cho Ban Kỹ Thuật**, Thiết bị cần chuẩn bị và thời gian triển khai.
 - Nút 1-click **"Đưa Vào Lịch"** để chuyển ý tưởng thành sự kiện lịch phát hành.
 

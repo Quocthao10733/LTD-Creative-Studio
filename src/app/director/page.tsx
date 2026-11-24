@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { IdeaCard } from "@/lib/types/director";
 import { useAuth } from "@/context/auth-context";
+import { getStoredGeminiModel } from "@/lib/ai/models";
 
 export default function DirectorPage() {
   const { profile } = useAuth();
@@ -66,6 +67,7 @@ export default function DirectorPage() {
         body: JSON.stringify({
           topic: topic.trim(),
           focusArea: focusArea === "all" ? "" : focusArea,
+          model: getStoredGeminiModel(),
         }),
       });
 
