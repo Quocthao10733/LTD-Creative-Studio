@@ -67,35 +67,50 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Safety timer: đảm bảo loading không bao giờ bị đơ quá 1 giây
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 1000);
+
     const auth = getFirebaseAuth();
     if (!auth) {
       setLoading(false);
+      clearTimeout(timer);
       return;
     }
 
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
-        const p = await fetchUserProfile(currentUser.uid);
-        if (p) {
-          setProfile(p);
-        } else {
-          setProfile({
-            uid: currentUser.uid,
-            email: currentUser.email || "",
-            displayName: currentUser.displayName || "Thành viên LTD",
-            photoURL: currentUser.photoURL || undefined,
-            department: "Ban Truyền thông",
-            role: "Thành viên",
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          });
-        }
+        // Cập nhật profile tạm từ Firebase Auth tức thì để không bị đứng trang
+        const basicProfile: UserProfile = {
+          uid: currentUser.uid,
+          email: currentUser.email || "",
+          displayName: currentUser.displayName || "Thành viên LTD",
+          photoURL: currentUser.photoURL || undefined,
+          department: "Ban Truyền thông",
+          role: "Thành viên",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+
+        setProfile((prev) => prev || basicProfile);
+
+        // Tải chi tiết ngầm từ Cloud không làm treo ứng dụng
+        fetchUserProfile(currentUser.uid)
+          .then((p) => {
+            if (p) setProfile(p);
+          })
+          .catch(() => {});
       }
       setLoading(false);
+      clearTimeout(timer);
     });
 
-    return () => unsubscribe();
+    return () => {
+      clearTimeout(timer);
+      unsubscribe();
+    };
   }, []);
 
   const login = async (email: string, pass: string) => {

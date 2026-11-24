@@ -45,8 +45,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // Đang kiểm tra auth — hiển thị màn hình chờ
-  if (loading || !isLoggedIn) {
+  // CHỈ HIỂN THỊ MÀN HÌNH CHỜ KHI ĐANG KIỂM TRA AUTH BAN ĐẦU (loading === true)
+  if (loading) {
     return (
       <div className="min-h-screen bg-[#070b10] flex items-center justify-center">
         <div className="text-center space-y-4">
@@ -64,6 +64,31 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <p className="text-slate-400 text-sm font-medium tracking-wide">
             Đang tải LTD Creative Studio…
           </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Nếu chưa đăng nhập: hiển thị thẻ thông báo chuyển hướng rõ ràng kèm nút bấm (không bao giờ bị đứng)
+  if (!isLoggedIn) {
+    return (
+      <div className="min-h-screen bg-[#070b10] flex items-center justify-center p-4">
+        <div className="text-center space-y-4 max-w-sm bg-[#0c131d] border border-slate-800 p-6 rounded-3xl shadow-2xl">
+          <div className="w-12 h-12 mx-auto rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/25">
+            <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-bold text-white">Yêu Cầu Đăng Nhập</h3>
+          <p className="text-slate-400 text-xs leading-relaxed">
+            Bạn cần đăng nhập tài khoản thành viên để truy cập công cụ này.
+          </p>
+          <a
+            href="/login"
+            className="inline-flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-lg transition"
+          >
+            Đến Cổng Đăng Nhập &rarr;
+          </a>
         </div>
       </div>
     );

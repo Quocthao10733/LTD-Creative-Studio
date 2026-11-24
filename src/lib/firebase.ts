@@ -381,17 +381,24 @@ export async function saveUserProfileToCloud(profile: UserProfile): Promise<bool
   return success;
 }
 
+const withTimeout = <T>(promise: Promise<T>, ms = 1500): Promise<T | null> => {
+  return Promise.race([
+    promise,
+    new Promise<null>((resolve) => setTimeout(() => resolve(null), ms)),
+  ]);
+};
+
 /**
  * Lấy thông tin User Profile từ Realtime Database, Firestore hoặc Auth
- * Đảm bảo dữ liệu máy tính & điện thoại luôn đồng nhất
+ * Đảm bảo dữ liệu máy tính & điện thoại luôn đồng nhất (có timeout an toàn không bị đứng)
  */
 export async function fetchUserProfile(uid: string): Promise<UserProfile | null> {
-  // 1. Thử lấy từ Firebase Realtime Database trước (đồng bộ tức thì và tin cậy nhất)
+  // 1. Thử lấy từ Firebase Realtime Database trước (timeout 1.5s để không bao giờ bị đơ giao diện)
   const rtdb = getFirebaseDatabase();
   if (rtdb) {
     try {
-      const snap = await get(child(ref(rtdb), `users/${uid}`));
-      if (snap.exists()) {
+      const snap = await withTimeout(get(child(ref(rtdb), `users/${uid}`)), 1500);
+      if (snap && snap.exists()) {
         const data = snap.val() as UserProfile;
         if (typeof window !== "undefined") {
           localStorage.setItem(`LTD_USER_PROFILE_${uid}`, JSON.stringify(data));
@@ -404,12 +411,12 @@ export async function fetchUserProfile(uid: string): Promise<UserProfile | null>
     }
   }
 
-  // 2. Thử lấy từ Firestore
+  // 2. Thử lấy từ Firestore (timeout 1.5s)
   const firestore = getFirebaseFirestore();
   if (firestore) {
     try {
-      const snap = await getDoc(doc(firestore, "users", uid));
-      if (snap.exists()) {
+      const snap = await withTimeout(getDoc(doc(firestore, "users", uid)), 1500);
+      if (snap && snap.exists()) {
         const data = snap.data() as UserProfile;
         if (typeof window !== "undefined") {
           localStorage.setItem(`LTD_USER_PROFILE_${uid}`, JSON.stringify(data));
