@@ -1,0 +1,285 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  :root {
+    --background: #f0f4fa;
+    --foreground: #0f172a;
+    --card: #ffffff;
+    --card-foreground: #0f172a;
+    --border: #e2e8f0;
+    --primary: #2563eb;
+    --primary-foreground: #ffffff;
+    --muted: #f8fafc;
+    --muted-foreground: #64748b;
+    --accent: #06b6d4;
+
+    /* Embers Foundry Motion Timing Tokens */
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-quart: cubic-bezier(0.25, 1, 0.5, 1);
+    --ease-cubic: cubic-bezier(0.33, 1, 0.68, 1);
+    --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  }
+
+  .dark {
+    --background: #070b10;
+    --foreground: #f8fafc;
+    --card: #0c1420;
+    --card-foreground: #f8fafc;
+    --border: #1e293b;
+    --muted: #0a1018;
+    --muted-foreground: #94a3b8;
+  }
+}
+
+html, body {
+  font-family: 'Be Vietnam Pro', 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  scroll-behavior: smooth;
+  letter-spacing: -0.012em;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Ẩn hoàn toàn Next.js development indicator (icon chữ N góc trái màn hình) */
+[data-nextjs-toast],
+[data-nextjs-dev-tools-button],
+nextjs-portal,
+#nextjs-dev-overlay {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+html.dark, html.dark body {
+  background-color: #070b10 !important;
+  color: #f8fafc !important;
+}
+
+html:not(.dark), html:not(.dark) body {
+  background-color: #f0f4fa !important;
+  color: #0f172a !important;
+}
+
+/* Custom delicate scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* ========================================================
+   EMBERS FOUNDRY INSPIRED MOTION & ANIMATION SYSTEM
+   ======================================================== */
+
+@keyframes emberGlideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(16px) scale(0.995);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes emberGlideDown {
+  0% {
+    opacity: 0;
+    transform: translateY(-14px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes emberFadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes emberScaleIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes emberPulseGlow {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.04);
+  }
+}
+
+@keyframes emberShimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes floatGentle {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+/* 3D Perspective & Neon Glow Tokens */
+.perspective-1000 {
+  perspective: 1000px;
+}
+.perspective-1200 {
+  perspective: 1200px;
+}
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.neon-glow-lime {
+  box-shadow: 0 0 25px rgba(163, 230, 53, 0.35), 0 0 50px rgba(163, 230, 53, 0.15);
+}
+.neon-glow-cyan {
+  box-shadow: 0 0 25px rgba(6, 182, 212, 0.35), 0 0 50px rgba(6, 182, 212, 0.15);
+}
+.neon-glow-purple {
+  box-shadow: 0 0 25px rgba(168, 85, 247, 0.35), 0 0 50px rgba(168, 85, 247, 0.15);
+}
+
+.text-glow-cyan {
+  text-shadow: 0 0 15px rgba(34, 211, 238, 0.6);
+}
+.text-glow-lime {
+  text-shadow: 0 0 15px rgba(163, 230, 53, 0.6);
+}
+
+/* Page Transition Wrapper */
+.ember-page-enter {
+  animation: emberGlideIn 0.42s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: transform, opacity;
+}
+
+/* Stagger Animations */
+.ember-stagger-1 {
+  animation: emberGlideIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) 0.04s both;
+}
+.ember-stagger-2 {
+  animation: emberGlideIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) 0.08s both;
+}
+.ember-stagger-3 {
+  animation: emberGlideIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) 0.12s both;
+}
+.ember-stagger-4 {
+  animation: emberGlideIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) 0.16s both;
+}
+.ember-stagger-5 {
+  animation: emberGlideIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) 0.20s both;
+}
+
+/* Embers Card Hover State */
+.embers-card {
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease;
+  will-change: transform, box-shadow;
+}
+
+.embers-card:hover {
+  transform: translateY(-3px) scale(1.01);
+  box-shadow: 0 16px 32px -12px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(37, 99, 235, 0.18);
+}
+
+/* Embers Interactive Button */
+.embers-btn {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+.embers-btn:hover {
+  transform: translateY(-1px);
+}
+
+.embers-btn:active {
+  transform: scale(0.97);
+}
+
+/* Floating Ambient Element */
+.embers-float {
+  animation: floatGentle 4s ease-in-out infinite;
+}
+
+/* Shimmer Highlight */
+.embers-shimmer {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.3) 50%, rgba(255, 255, 255, 0) 100%);
+  background-size: 200% 100%;
+  animation: emberShimmer 3s infinite;
+}
+
+/* Masked Slide Down / Up */
+.mask-slide-down {
+  overflow: hidden;
+}
+.mask-slide-down > * {
+  animation: emberGlideDown 0.48s cubic-bezier(0.25, 1, 0.5, 1) both;
+}
+
+.mask-slide-up {
+  overflow: hidden;
+}
+.mask-slide-up > * {
+  animation: emberGlideIn 0.48s cubic-bezier(0.25, 1, 0.5, 1) both;
+}
+
+/* ========================================================
+   SUPPRESS NEXT.JS DEV INDICATOR & FLOATING "N" BADGE
+   ======================================================== */
+[data-nextjs-toast],
+[data-nextjs-toast-wrapper],
+[data-nextjs-dev-tools-button],
+[data-nextjs-dev-tools-position],
+[data-nextjs-dialog-overlay],
+[data-next-badge],
+div[data-nextjs-dev-tools-button],
+button[data-nextjs-dev-tools-button],
+nextjs-portal,
+#nextjs-dev-overlay {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  position: absolute !important;
+  left: -9999px !important;
+}
+
+

@@ -1,0 +1,537 @@
+import { initializeApp, getApps, getApp, FirebaseApp } from "firebase/app";
+import {
+  getAuth,
+  Auth,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged,
+  updateProfile,
+  GoogleAuthProvider,
+  signInWithPopup,
+  User,
+} from "firebase/auth";
+import {
+  getDatabase,
+  ref,
+  onValue,
+  set,
+  remove,
+  Database,
+} from "firebase/database";
+import {
+  getFirestore,
+  collection,
+  onSnapshot,
+  doc,
+  setDoc,
+  deleteDoc,
+  Firestore,
+} from "firebase/firestore";
+import { CalendarEvent } from "@/lib/types/director";
+
+export interface FirebaseConfig {
+  apiKey?: string;
+  authDomain?: string;
+  databaseURL?: string;
+  projectId?: string;
+  storageBucket?: string;
+  messagingSenderId?: string;
+  appId?: string;
+  measurementId?: string;
+}
+
+const STORAGE_KEY = "LTD_FIREBASE_CONFIG";
+
+// Cấu hình chính thức của dự án LTD Creative Studio do người dùng cung cấp
+export const DEFAULT_FIREBASE_CONFIG: FirebaseConfig = {
+  apiKey: "AIzaSyCE-P5tk7tfDOfPuxSghPLFQ9JGR0iRCbk",
+  authDomain: "ltd-creative-studio.firebaseapp.com",
+  projectId: "ltd-creative-studio",
+  storageBucket: "ltd-creative-studio.firebasestorage.app",
+  messagingSenderId: "137784324448",
+  appId: "1:137784324448:web:cd0b9921d4f146a6e96e05",
+  measurementId: "G-68DGWCNCS7",
+  databaseURL: "https://ltd-creative-studio-default-rtdb.firebaseio.com",
+};
+
+// Lấy cấu hình từ biến môi trường, localStorage hoặc mặc định
+export function getFirebaseConfig(): FirebaseConfig {
+  if (typeof window !== "undefined") {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed.projectId || parsed.apiKey) {
+          return { ...DEFAULT_FIREBASE_CONFIG, ...parsed };
+        }
+      }
+    } catch {}
+  }
+
+  const envConfig: FirebaseConfig = {
+    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || DEFAULT_FIREBASE_CONFIG.apiKey,
+    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || DEFAULT_FIREBASE_CONFIG.authDomain,
+    databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL || DEFAULT_FIREBASE_CONFIG.databaseURL,
+    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || DEFAULT_FIREBASE_CONFIG.projectId,
+    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || DEFAULT_FIREBASE_CONFIG.storageBucket,
+    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || DEFAULT_FIREBASE_CONFIG.messagingSenderId,
+    appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || DEFAULT_FIREBASE_CONFIG.appId,
+    measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || DEFAULT_FIREBASE_CONFIG.measurementId,
+  };
+
+  return envConfig;
+}
+
+export function saveFirebaseConfig(config: FirebaseConfig): void {
+  if (typeof window !== "undefined") {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+  }
+}
+
+let cachedApp: FirebaseApp | null = null;
+let cachedRtdb: Database | null = null;
+let cachedFirestore: Firestore | null = null;
+let cachedAuth: Auth | null = null;
+
+export function getFirebaseApp(): FirebaseApp | null {
+  const config = getFirebaseConfig();
+  if (!config.apiKey || !config.projectId) {
+    return null;
+  }
+
+  try {
+    if (getApps().length > 0) {
+      return getApp();
+    }
+    cachedApp = initializeApp(config as Record<string, string>);
+    return cachedApp;
+  } catch (err) {
+    console.error("Firebase initializeApp error:", err);
+    return null;
+  }
+}
+
+export function getFirebaseDatabase(): Database | null {
+  const app = getFirebaseApp();
+  if (!app) return null;
+  try {
+    if (!cachedRtdb) {
+      cachedRtdb = getDatabase(app);
+    }
+    return cachedRtdb;
+  } catch (err) {
+    return null;
+  }
+}
+
+export function getFirebaseFirestore(): Firestore | null {
+  const app = getFirebaseApp();
+  if (!app) return null;
+  try {
+    if (!cachedFirestore) {
+      cachedFirestore = getFirestore(app);
+    }
+    return cachedFirestore;
+  } catch (err) {
+    return null;
+  }
+}
+
+export function getFirebaseAuth(): Auth | null {
+  const app = getFirebaseApp();
+  if (!app) return null;
+  try {
+    if (!cachedAuth) {
+      cachedAuth = getAuth(app);
+    }
+    return cachedAuth;
+  } catch (err) {
+    return null;
+  }
+}
+
+export interface UserProfile {
+  uid: string;
+  email: string;
+  displayName: string;
+  photoURL?: string;
+  department: "Ban Truyền thông" | "Ban Kỹ thuật";
+  role: "Chủ tịch CLB" | "Trưởng Ban" | "Phó Ban" | "Thành viên";
+  phone?: string;
+  bio?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Đăng ký tài khoản thành viên mới trên Firebase Authentication & Firestore
+ */
+export async function registerWithFirebase(params: {
+  email: string;
+  password: string;
+  displayName: string;
+  department: "Ban Truyền thông" | "Ban Kỹ thuật";
+  role?: "Chủ tịch CLB" | "Trưởng Ban" | "Phó Ban" | "Thành viên";
+  phone?: string;
+}): Promise<{ user: User; profile: UserProfile }> {
+  const auth = getFirebaseAuth();
+  if (!auth) throw new Error("Firebase Auth chưa được khởi tạo!");
+
+  const cred = await createUserWithEmailAndPassword(auth, params.email, params.password);
+  const user = cred.user;
+
+  // Cập nhật displayName trên Firebase Auth
+  await updateProfile(user, {
+    displayName: params.displayName,
+    photoURL: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
+  });
+
+  const profile: UserProfile = {
+    uid: user.uid,
+    email: user.email || params.email,
+    displayName: params.displayName,
+    photoURL: user.photoURL || undefined,
+    department: params.department,
+    role: params.role || "Thành viên",
+    phone: params.phone,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+
+  // Lưu thông tin chi tiết vào Firestore collection 'users'
+  const firestore = getFirebaseFirestore();
+  if (firestore) {
+    try {
+      const userRef = doc(firestore, "users", user.uid);
+      await setDoc(userRef, profile);
+    } catch (fsErr) {
+      console.warn("Lưu profile Firestore lỗi (cần rules mở):", fsErr);
+    }
+  }
+
+  // Lưu vào localStorage để fallback offline
+  if (typeof window !== "undefined") {
+    localStorage.setItem(`LTD_USER_PROFILE_${user.uid}`, JSON.stringify(profile));
+    localStorage.setItem("LTD_CURRENT_USER", JSON.stringify(profile));
+  }
+
+  return { user, profile };
+}
+
+/**
+ * Đăng nhập tài khoản bằng Email & Mật khẩu
+ */
+export async function loginWithFirebase(
+  email: string,
+  password: string
+): Promise<{ user: User; profile: UserProfile }> {
+  const auth = getFirebaseAuth();
+  if (!auth) throw new Error("Firebase Auth chưa được khởi tạo!");
+
+  const cred = await signInWithEmailAndPassword(auth, email, password);
+  const user = cred.user;
+
+  // Tải profile từ Firestore hoặc localStorage
+  let profile = await fetchUserProfile(user.uid);
+  if (!profile) {
+    profile = {
+      uid: user.uid,
+      email: user.email || email,
+      displayName: user.displayName || email.split("@")[0],
+      photoURL: user.photoURL || undefined,
+      department: "Ban Truyền thông",
+      role: "Thành viên",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+  }
+
+  if (typeof window !== "undefined") {
+    localStorage.setItem("LTD_CURRENT_USER", JSON.stringify(profile));
+  }
+
+  return { user, profile };
+}
+
+/**
+ * Đăng nhập nhanh bằng tài khoản Google
+ */
+export async function loginWithGoogleFirebase(
+  department: "Ban Truyền thông" | "Ban Kỹ thuật" = "Ban Truyền thông"
+): Promise<{ user: User; profile: UserProfile }> {
+  const auth = getFirebaseAuth();
+  if (!auth) throw new Error("Firebase Auth chưa được khởi tạo!");
+
+  const provider = new GoogleAuthProvider();
+  const cred = await signInWithPopup(auth, provider);
+  const user = cred.user;
+
+  let profile = await fetchUserProfile(user.uid);
+  if (!profile) {
+    profile = {
+      uid: user.uid,
+      email: user.email || "",
+      displayName: user.displayName || "Thành viên LTD",
+      photoURL: user.photoURL || undefined,
+      department,
+      role: "Thành viên",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    const firestore = getFirebaseFirestore();
+    if (firestore) {
+      try {
+        await setDoc(doc(firestore, "users", user.uid), profile);
+      } catch {}
+    }
+  }
+
+  if (typeof window !== "undefined") {
+    localStorage.setItem("LTD_CURRENT_USER", JSON.stringify(profile));
+  }
+
+  return { user, profile };
+}
+
+/**
+ * Đăng xuất khỏi Firebase
+ */
+export async function logoutFirebase(): Promise<void> {
+  const auth = getFirebaseAuth();
+  if (auth) {
+    await signOut(auth);
+  }
+  if (typeof window !== "undefined") {
+    localStorage.removeItem("LTD_CURRENT_USER");
+  }
+}
+
+/**
+ * Lấy thông tin User Profile từ Firestore hoặc localStorage
+ */
+export async function fetchUserProfile(uid: string): Promise<UserProfile | null> {
+  const firestore = getFirebaseFirestore();
+  if (firestore) {
+    try {
+      const snap = await onSnapshot(doc(firestore, "users", uid), () => {});
+    } catch {}
+  }
+
+  if (typeof window !== "undefined") {
+    try {
+      const local = localStorage.getItem(`LTD_USER_PROFILE_${uid}`) || localStorage.getItem("LTD_CURRENT_USER");
+      if (local) return JSON.parse(local);
+    } catch {}
+  }
+  return null;
+}
+
+export function getFirebaseStatus(): {
+  isConfigured: boolean;
+  projectId?: string;
+  databaseURL?: string;
+} {
+  const config = getFirebaseConfig();
+  return {
+    isConfigured: Boolean(config.apiKey && config.projectId),
+    projectId: config.projectId,
+    databaseURL: config.databaseURL,
+  };
+}
+
+/**
+ * Lắng nghe sự kiện lịch thời gian thực (Realtime Listener)
+ * Ưu tiên Firebase Realtime Database / Firestore, tự động fallback nếu chưa mở Rules
+ */
+export function subscribeRealtimeCalendar(
+  onEvents: (events: CalendarEvent[]) => void,
+  onError?: (err: any) => void
+): () => void {
+  // 1. Tải dữ liệu ban đầu từ local REST API ngay lập tức
+  fetchFallback(onEvents);
+
+  const rtdb = getFirebaseDatabase();
+  const firestore = getFirebaseFirestore();
+
+  let unsubs: (() => void)[] = [];
+
+  // 2. Thử lắng nghe qua Firebase Realtime Database
+  if (rtdb) {
+    try {
+      const eventsRef = ref(rtdb, "calendar_events");
+      const unsubscribeRtdb = onValue(
+        eventsRef,
+        (snapshot) => {
+          if (snapshot.exists()) {
+            const val = snapshot.val();
+            const list: CalendarEvent[] = Array.isArray(val)
+              ? val.filter(Boolean)
+              : Object.values(val);
+            onEvents(list);
+          }
+        },
+        (error) => {
+          // Báo lỗi 1 lần nếu RTDB permission bị từ chối
+          console.warn("RTDB sync inactive:", error.message);
+          if (onError) onError(error);
+        }
+      );
+      unsubs.push(() => {
+        try {
+          unsubscribeRtdb();
+        } catch {}
+      });
+    } catch (err) {
+      console.warn("RTDB init listener error:", err);
+    }
+  }
+
+  // 3. Polling nhẹ định kỳ mỗi 30 giây để cập nhật dữ liệu nếu không có Firebase Realtime
+  const interval = setInterval(() => {
+    fetchFallback(onEvents);
+  }, 30000);
+
+  unsubs.push(() => clearInterval(interval));
+
+  return () => {
+    unsubs.forEach((fn) => {
+      try {
+        fn();
+      } catch {}
+    });
+  };
+}
+
+function tryFirestoreListener(
+  firestore: Firestore,
+  onEvents: (events: CalendarEvent[]) => void,
+  onError?: (err: any) => void
+) {
+  try {
+    const colRef = collection(firestore, "calendar_events");
+    const unsubscribe = onSnapshot(
+      colRef,
+      (snapshot) => {
+        if (!snapshot.empty) {
+          const list = snapshot.docs.map((d) => d.data() as CalendarEvent);
+          onEvents(list);
+        } else {
+          fetchFallback(onEvents);
+        }
+      },
+      (err) => {
+        console.warn("Firestore listener error, using Local Realtime:", err.message);
+        if (onError) onError(err);
+        fetchFallback(onEvents);
+      }
+    );
+    return unsubscribe;
+  } catch {
+    fetchFallback(onEvents);
+  }
+}
+
+async function fetchFallback(onEvents: (events: CalendarEvent[]) => void) {
+  try {
+    const res = await fetch("/api/calendar");
+    const json = await res.json();
+    if (json.success && Array.isArray(json.data)) {
+      onEvents(json.data);
+    }
+  } catch (err) {
+    console.error("Lỗi fetch /api/calendar:", err);
+  }
+}
+
+async function fetchFallbackAndSyncToFirebase(
+  rtdb: Database,
+  onEvents: (events: CalendarEvent[]) => void
+) {
+  try {
+    const res = await fetch("/api/calendar");
+    const json = await res.json();
+    if (json.success && Array.isArray(json.data)) {
+      onEvents(json.data);
+      const eventsRef = ref(rtdb, "calendar_events");
+      const map: Record<string, CalendarEvent> = {};
+      json.data.forEach((evt: CalendarEvent) => {
+        map[evt.id] = evt;
+      });
+      set(eventsRef, map).catch(() => {});
+    }
+  } catch {}
+}
+
+/**
+ * Lưu sự kiện lịch lên Firebase & API nội bộ
+ */
+export async function saveRealtimeCalendarEvent(event: CalendarEvent): Promise<boolean> {
+  const rtdb = getFirebaseDatabase();
+  const firestore = getFirebaseFirestore();
+
+  // 1. Ghi lên Realtime Database
+  if (rtdb) {
+    try {
+      const eventRef = ref(rtdb, `calendar_events/${event.id}`);
+      await set(eventRef, event);
+    } catch (err) {
+      console.warn("Lỗi ghi lên Firebase RTDB:", err);
+    }
+  }
+
+  // 2. Ghi lên Firestore
+  if (firestore) {
+    try {
+      const docRef = doc(firestore, "calendar_events", event.id);
+      await setDoc(docRef, event);
+    } catch (err) {
+      console.warn("Lỗi ghi lên Firestore:", err);
+    }
+  }
+
+  // 3. Luôn lưu vào API nội bộ để đảm bảo an toàn dữ liệu
+  try {
+    await fetch("/api/calendar", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(event),
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Xóa sự kiện lịch khỏi Firebase & API nội bộ
+ */
+export async function deleteRealtimeCalendarEvent(id: string): Promise<boolean> {
+  const rtdb = getFirebaseDatabase();
+  const firestore = getFirebaseFirestore();
+
+  if (rtdb) {
+    try {
+      const eventRef = ref(rtdb, `calendar_events/${id}`);
+      await remove(eventRef);
+    } catch (err) {
+      console.warn("Lỗi xóa khỏi RTDB:", err);
+    }
+  }
+
+  if (firestore) {
+    try {
+      const docRef = doc(firestore, "calendar_events", id);
+      await deleteDoc(docRef);
+    } catch (err) {
+      console.warn("Lỗi xóa khỏi Firestore:", err);
+    }
+  }
+
+  try {
+    await fetch(`/api/calendar?id=${id}`, { method: "DELETE" });
+    return true;
+  } catch {
+    return false;
+  }
+}
