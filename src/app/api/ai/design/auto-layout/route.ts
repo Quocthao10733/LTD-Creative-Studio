@@ -14,7 +14,6 @@ export async function POST(request: NextRequest) {
       timeStr = "09:00 - 11:30",
       locationStr = "Long Thành, Đồng Nai",
       callToAction = "ĐĂNG KÝ NGAY",
-      apiKey,
     } = body;
 
     if (!topic || !topic.trim()) {
@@ -224,7 +223,7 @@ export async function POST(request: NextRequest) {
 
     // Thử gọi Gemini AI để sáng tạo slogan và tiêu đề chuyên sâu
     try {
-      const ai = getGeminiClient(apiKey);
+      const ai = getGeminiClient();
       const systemPrompt = `
 Bạn là Giám đốc Sáng tạo & Thiết kế Đồ họa (Art Director) của CLB Nhiếp Ảnh LTD (Long Thành Digital Photo Club).
 Nhiệm vụ của bạn là nhận chủ đề sự kiện, tự động phân tích và tạo kịch bản thiết kế Poster/Banner hoàn chỉnh theo tỉ lệ ${preset.aspectRatio} (${preset.name}).

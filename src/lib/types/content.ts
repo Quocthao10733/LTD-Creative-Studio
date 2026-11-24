@@ -27,7 +27,6 @@ export interface GenerateContentRequest {
   topic: string;
   facts?: string;
   model?: string;
-  apiKeyOverride?: string;
 }
 
 export interface GenerateContentResponse {

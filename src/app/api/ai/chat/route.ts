@@ -13,13 +13,12 @@ interface ChatRefineRequest {
   tone?: string;
   userMessage: string;
   chatHistory?: ChatMessage[];
-  apiKeyOverride?: string;
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body: ChatRefineRequest = await request.json();
-    const { currentHook, currentBody, platform, tone, userMessage, chatHistory = [], apiKeyOverride } = body;
+    const { currentHook, currentBody, platform, tone, userMessage, chatHistory = [] } = body;
 
     if (!userMessage || !userMessage.trim()) {
       return NextResponse.json(
@@ -28,12 +27,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const key = apiKeyOverride?.trim() || process.env.GEMINI_API_KEY?.trim();
+    const key = process.env.GEMINI_API_KEY?.trim();
 
     // Call real Gemini API if key is available
     if (key) {
       try {
-        const ai = getGeminiClient(key);
+        const ai = getGeminiClient();
         const model = "gemini-3.5-flash-lite";
 
         const systemPrompt = `

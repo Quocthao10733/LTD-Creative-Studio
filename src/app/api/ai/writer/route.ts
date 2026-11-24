@@ -69,7 +69,7 @@ ${facts ? `📌 Thông tin xác nhận: ${facts}\n` : ""}💬 "Chụp ảnh khô
 export async function POST(request: NextRequest) {
   try {
     const body: GenerateContentRequest = await request.json();
-    const { platform, postType, tone, topic, facts, apiKeyOverride, model } = body;
+    const { platform, postType, tone, topic, facts, model } = body;
 
     if (!topic || !topic.trim()) {
       return NextResponse.json(
@@ -78,12 +78,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const key = apiKeyOverride?.trim() || process.env.GEMINI_API_KEY?.trim();
+    const key = process.env.GEMINI_API_KEY?.trim();
 
     // If API key is available, use real Gemini client
     if (key) {
       try {
-        const ai = getGeminiClient(key);
+        const ai = getGeminiClient();
         const selectedModel =
           model === "gemini-2.5-flash" || !model ? "gemini-3.5-flash-lite" : model;
 

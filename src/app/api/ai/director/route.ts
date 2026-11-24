@@ -5,7 +5,7 @@ import { IdeaCard } from "@/lib/types/director";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { topic, focusArea, model, apiKeyOverride } = body;
+    const { topic, focusArea, model } = body;
 
     if (!topic || !topic.trim()) {
       return NextResponse.json(
@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const ai = getGeminiClient(apiKeyOverride);
+    const ai = getGeminiClient();
     const selectedModel =
       model === "gemini-2.5-flash" || !model ? "gemini-3.5-flash-lite" : model;
 

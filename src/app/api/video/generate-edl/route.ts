@@ -5,13 +5,13 @@ import { EditDecisionList, EDLShot, RawClip } from "@/lib/types/video";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { clips, prompt, aspectRatio, targetDuration, apiKeyOverride, model } = body;
+    const { clips, prompt, aspectRatio, targetDuration, model } = body;
 
     const clipList: RawClip[] = clips || [];
     const ratio = aspectRatio || "9:16";
     const duration = targetDuration || 15;
 
-    const ai = getGeminiClient(apiKeyOverride);
+    const ai = getGeminiClient();
     const selectedModel = model || "gemini-2.5-flash";
 
     const systemPrompt = `

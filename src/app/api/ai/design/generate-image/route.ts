@@ -50,12 +50,12 @@ const CURATED_BACKGROUNDS = [
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { prompt, theme = "workshop", apiKey } = body;
+    const { prompt, theme = "workshop" } = body;
 
     // 1. Phân tích prompt bằng Gemini để tìm ra gợi ý bối cảnh tốt nhất
     let enhancedDescription = prompt;
     try {
-      const ai = getGeminiClient(apiKey);
+      const ai = getGeminiClient();
       const res = await ai.models.generateContent({
         model: "gemini-2.5-flash",
         contents: `Hãy tối ưu mô tả bối cảnh hình ảnh poster này cho nhiếp ảnh gia CLB LTD: "${prompt}". Trả về 1 câu mô tả ngắn gọn bằng tiếng Việt về ánh sáng, màu sắc và độ tương phản phù hợp để chèn chữ lên.`,
