@@ -1,5 +1,3 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
 # dependencies
 /node_modules
 /.pnp
@@ -30,11 +28,11 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# Environment variables - never commit secrets
 .env*
 !.env.example
 
-# media uploads & renders
+# media uploads & renders (keep avatars committed so members photos show on Vercel)
 /public/uploads/videos/*
 !/public/uploads/videos/.gitkeep
 /public/renders/*
@@ -47,45 +45,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# Environment variables - never commit secrets
-.env*
-!.env.example
-
-# Dependencies
-node_modules/
-
-# Next.js
-.next/
-out/
-build/
-
-# Deployment
-.vercel/
-
 # Logs
 *.log
-npm-debug.log*
-yarn-debug.log*
-
-# Temporary files
-temp/
-tmp/
-coverage/
-
-# Generated video renders
-/public/renders/*
-!/public/renders/.gitkeep
-
-
-# Private LTD member data
-data/members.json
-
-# Private runtime uploads
-/public/uploads/
-
-# Private LTD data
-/public/uploads/
-/data/members.json
-.env*
-!.env.example
-

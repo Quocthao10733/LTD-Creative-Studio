@@ -1,0 +1,85 @@
+[
+  {
+    "id": "mem-1795424029590",
+    "name": "Phạm Trung Kiên",
+    "department": "TECH",
+    "role": "Trưởng Ban Kỹ Thuật LTD K25 - K26",
+    "generation": "Gen 1",
+    "bio": "",
+    "skills": [],
+    "status": "active",
+    "joinedDate": "10/2023",
+    "createdAt": "2026-11-23T08:53:49.590Z",
+    "avatar": "/uploads/avatars/avatar-mem-1795424029590-1795424038468.jpg",
+    "equipment": "",
+    "email": ""
+  },
+  {
+    "id": "mem-1795423960072",
+    "name": "Nguyễn Hà Thanh",
+    "department": "COMM",
+    "role": "Phó Chủ Nhiệm - Trưởng Ban Truyền Thông LTD K25 - K26",
+    "generation": "Gen 1",
+    "bio": "",
+    "skills": [],
+    "status": "active",
+    "joinedDate": "10/2023",
+    "createdAt": "2026-11-23T08:52:40.072Z",
+    "avatar": "/uploads/avatars/avatar-mem-1795423960072-1795423976776.jpg",
+    "equipment": "",
+    "email": ""
+  },
+  {
+    "id": "mem-1795423861621",
+    "name": "Lê Quốc Hào",
+    "department": "TECH",
+    "role": "Chủ Nhiệm LTD K25 - K26",
+    "generation": "Gen 1",
+    "bio": "",
+    "skills": [],
+    "status": "active",
+    "joinedDate": "10/2023",
+    "createdAt": "2026-11-23T08:51:01.630Z",
+    "avatar": "/uploads/avatars/avatar-mem-1795423861621-1795423891378.jpg",
+    "equipment": "",
+    "email": ""
+  },
+  {
+    "id": "mem-051",
+    "name": "Đỗ Quốc Thảo",
+    "department": "TECH",
+    "role": "Chủ Tịch CLB Nhiếp Ảnh LTD",
+    "generation": "Gen 1",
+    "bio": "Nhà sáng lập CLB Nhiếp Ảnh Long Thành Digital (LTD). Giám đốc nghệ thuật các dự án triển lãm ảnh thường niên.",
+    "equipment": "Sony A7 IV + 24-70mm f/2.8 GM",
+    "skills": [
+      "Club Leadership",
+      "Art Direction",
+      "Fine Art Photography"
+    ],
+    "avatar": "/uploads/avatars/avatar-mem-051-1795423474245.jpg",
+    "email": "",
+    "status": "active",
+    "joinedDate": "06/2024",
+    "createdAt": "2022-05-01T08:00:00.000Z"
+  },
+  {
+    "id": "mem-052",
+    "name": "Võ Huỳnh Như",
+    "department": "COMM",
+    "role": "Phó Chủ Tịch CLB Nhiếp Ảnh LTD",
+    "generation": "Gen 1",
+    "bio": "Phụ trách tổng thể chiến lược thương hiệu, điều phối các ban chuyên môn và quản lý nhân sự CLB.",
+    "skills": [
+      "Operations",
+      "Strategic Brand",
+      "Talent Management"
+    ],
+    "avatar": "/uploads/avatars/avatar-mem-052-1795488673693.jpg",
+    "email": "",
+    "status": "active",
+    "joinedDate": "06/2024",
+    "createdAt": "2022-05-01T08:00:00.000Z",
+    "equipment": ""
+  }
+]
