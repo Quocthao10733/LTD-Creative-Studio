@@ -32,28 +32,35 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Profile mặc định cho Ban Điều Hành CLB LTD nếu chưa đăng nhập
+// Placeholder uid — dùng để phân biệt "chưa đăng nhập" với user thật
 export const DEFAULT_LTD_PROFILE: UserProfile = {
   uid: "ltd-default-admin",
-  email: "admin@ltdphoto.club",
-  displayName: "Đỗ Quốc Thảo",
+  email: "",
+  displayName: "",
   department: "Ban Truyền thông",
-  role: "Chủ tịch CLB",
-  photoURL: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80",
-  createdAt: "2026-01-01T00:00:00.000Z",
-  updatedAt: "2026-11-24T00:00:00.000Z",
+  role: "Thành viên",
+  photoURL: undefined,
+  createdAt: "",
+  updatedAt: "",
 };
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  // Khởi tạo null — không fallback về demo data cũ
   const [profile, setProfile] = useState<UserProfile | null>(() => {
     if (typeof window !== "undefined") {
       try {
         const saved = localStorage.getItem("LTD_CURRENT_USER");
-        if (saved) return JSON.parse(saved);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          // Chỉ dùng nếu là user thật (có displayName, không phải demo admin cũ)
+          if (parsed?.uid && parsed.uid !== "ltd-default-admin" && parsed.displayName) {
+            return parsed;
+          }
+        }
       } catch {}
     }
-    return DEFAULT_LTD_PROFILE;
+    return null;
   });
   const [loading, setLoading] = useState(true);
 
@@ -132,7 +139,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = async () => {
     await logoutFirebase();
     setUser(null);
-    setProfile(DEFAULT_LTD_PROFILE);
+    setProfile(null);
+    // Xóa cache local khi đăng xuất
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("LTD_CURRENT_USER");
+    }
   };
 
   const setLocalProfile = (newProfile: UserProfile) => {
