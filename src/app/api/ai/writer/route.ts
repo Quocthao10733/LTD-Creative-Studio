@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { ApiError } from "@google/genai";
 import { getGeminiClient, LTD_KNOWLEDGE_BASE } from "@/lib/ai/gemini";
 import { resolveGeminiModel } from "@/lib/ai/models";
 import { loadSkillGuidance } from "@/lib/ai/skills";
@@ -12,6 +13,31 @@ Hòa trong không khí chào mừng Ngày Nhà giáo Việt Nam 20/11, hoạt đ
 Mỗi tác phẩm mang một sắc màu riêng, nhưng tất cả đều chung một ý nghĩa: tri ân những người đã luôn tận tâm dìu dắt và đồng hành cùng chúng ta trên hành trình trưởng thành.
 💐 Nhân ngày Nhà giáo Việt Nam 20/11, Long Thành Digital kính chúc quý thầy cô luôn mạnh khỏe, hạnh phúc và giữ mãi ngọn lửa nhiệt huyết với sự nghiệp trồng người!
 `;
+
+function getGeminiErrorMessage(error: unknown): string {
+  if (error instanceof ApiError) {
+    switch (error.status) {
+      case 400:
+      case 401:
+      case 403:
+        return "Gemini từ chối API key hoặc yêu cầu. Hãy kiểm tra key mới, quyền truy cập Gemini API và giới hạn của key.";
+      case 404:
+        return "Mô hình Gemini không khả dụng cho key này. Hãy tải lại trang để dùng mô hình mặc định mới.";
+      case 429:
+        return "Gemini đang giới hạn lượt gọi hoặc đã hết quota. Hãy kiểm tra hạn mức của key rồi thử lại.";
+      default:
+        return error.status >= 500
+          ? "Dịch vụ Gemini đang gặp sự cố tạm thời. Hãy thử lại sau."
+          : `Gemini trả về lỗi HTTP ${error.status}. Hãy kiểm tra cấu hình key và mô hình.`;
+    }
+  }
+
+  if (error instanceof SyntaxError) {
+    return "Gemini trả về nội dung không đúng định dạng. Hãy thử tạo lại bài.";
+  }
+
+  return "Không thể kết nối Gemini. Hãy kiểm tra API key, mô hình và kết nối mạng.";
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -146,7 +172,7 @@ Hook gần đây chỉ để tránh lặp (không sao chép): ${JSON.stringify(r
     return NextResponse.json(
       {
         success: false,
-        error: "Không thể tạo nội dung bằng Gemini. Vui lòng kiểm tra API Key, mô hình đã chọn hoặc thử lại.",
+        error: getGeminiErrorMessage(error),
       },
       { status: 502 }
     );

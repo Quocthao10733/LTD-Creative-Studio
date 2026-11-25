@@ -3,22 +3,22 @@ const GEMINI_MODEL_CHANGE_EVENT = "ltd-gemini-model-change";
 
 export const GEMINI_MODEL_OPTIONS = [
   {
-    id: "gemini-2.5-flash",
-    name: "Gemini 2.5 Flash",
-    desc: "Nhanh, phù hợp cho bài đăng và kịch bản video ngắn.",
+    id: "gemini-3.8-flash",
+    name: "Gemini 3.8 Flash",
+    desc: "Mô hình Flash ổn định hiện tại, phù hợp viết và xử lý nội dung.",
     badge: "Khuyên dùng",
   },
   {
-    id: "gemini-2.5-pro",
-    name: "Gemini 2.5 Pro",
-    desc: "Phù hợp cho concept nhiều lớp và nội dung cần suy luận sâu.",
-    badge: "Pro",
+    id: "gemini-3.5-flash-lite",
+    name: "Gemini 3.5 Flash-Lite",
+    desc: "Nhanh và tiết kiệm cho nội dung ngắn, tác vụ thường ngày.",
+    badge: "Tiết kiệm",
   },
 ] as const;
 
 export type GeminiModel = (typeof GEMINI_MODEL_OPTIONS)[number]["id"];
 
-export const DEFAULT_GEMINI_MODEL: GeminiModel = "gemini-2.5-flash";
+export const DEFAULT_GEMINI_MODEL: GeminiModel = "gemini-3.8-flash";
 
 export function isGeminiModel(value: unknown): value is GeminiModel {
   return GEMINI_MODEL_OPTIONS.some((option) => option.id === value);
