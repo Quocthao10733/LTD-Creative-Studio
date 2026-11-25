@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ApiError, ThinkingLevel } from "@google/genai";
 import { getGeminiClient, LTD_KNOWLEDGE_BASE } from "@/lib/ai/gemini";
-import { resolveGeminiModel } from "@/lib/ai/models";
+import { GeminiModel, resolveGeminiModel } from "@/lib/ai/models";
 import { loadSkillGuidance } from "@/lib/ai/skills";
 import { isWritingAngleId, WRITING_ANGLES } from "@/lib/ai/writing-angles";
 import { GenerateContentRequest, GenerateContentResponse } from "@/lib/types/content";
@@ -148,16 +148,30 @@ Góc viết ưu tiên: ${angle?.instruction}
 Hook gần đây chỉ để tránh lặp (không sao chép): ${JSON.stringify(recentHookList)}
 `;
 
-    const response = await ai.models.generateContent({
-      model: selectedModel,
-      contents: userPrompt,
-      config: {
-        systemInstruction: systemPrompt,
-        temperature: 0.8,
-        thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
-        responseMimeType: "application/json",
-      },
-    });
+    const generateWithModel = (requestedModel: GeminiModel) =>
+      ai.models.generateContent({
+        model: requestedModel,
+        contents: userPrompt,
+        config: {
+          systemInstruction: systemPrompt,
+          temperature: 0.8,
+          thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
+          responseMimeType: "application/json",
+        },
+      });
+
+    let modelUsed = selectedModel;
+    let response;
+    try {
+      response = await generateWithModel(selectedModel);
+    } catch (error) {
+      if (!(error instanceof ApiError) || error.status < 500 || selectedModel === "gemini-3.5-flash-lite") {
+        throw error;
+      }
+
+      modelUsed = "gemini-3.5-flash-lite";
+      response = await generateWithModel(modelUsed);
+    }
 
     const responseText = response.text || "";
     const cleaned = responseText.replace(/```json/g, "").replace(/```/g, "").trim();
@@ -166,7 +180,7 @@ Hook gần đây chỉ để tránh lặp (không sao chép): ${JSON.stringify(r
     return NextResponse.json({
       success: true,
       data: parsed,
-      modelUsed: selectedModel,
+      modelUsed,
     });
   } catch (error: unknown) {
     console.error("Lỗi tạo nội dung AI:", error);

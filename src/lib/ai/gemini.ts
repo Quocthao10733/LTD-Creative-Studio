@@ -52,13 +52,9 @@ export function getGeminiClient(): GoogleGenAI {
   return new GoogleGenAI({
     apiKey: key,
     httpOptions: {
-      timeout: 25_000,
+      timeout: 20_000,
       retryOptions: {
-        attempts: 2,
-        initialDelay: 0.5,
-        maxDelay: 1,
-        expBase: 2,
-        jitter: 0.2,
+        attempts: 1,
       },
     },
   });
