@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getGeminiClient, LTD_KNOWLEDGE_BASE, LTD_EXPERT_SKILLS_PROMPT } from "@/lib/ai/gemini";
+import { ApiError, ThinkingLevel } from "@google/genai";
+import { getGeminiClient, LTD_KNOWLEDGE_BASE } from "@/lib/ai/gemini";
+import { loadSkillGuidance } from "@/lib/ai/skills";
 import { EditDecisionList, EDLShot, RawClip } from "@/lib/types/video";
 
 export async function POST(request: NextRequest) {
@@ -15,18 +17,22 @@ export async function POST(request: NextRequest) {
     const selectedModel =
       model === "gemini-2.5-flash" || !model ? "gemini-3.5-flash-lite" : model;
 
+    // Load skills từ repo: video (core), ad-creative (formats, generative tools), social (short-form video)
+    const skillGuidance = await loadSkillGuidance(["video", "ad-creative", "social"]);
+
     const systemPrompt = `
-Bạn là Đạo diễn Hậu kỳ Video (Lead Video Editor & Director) của CLB Nhiếp ảnh LTD, vận dụng phương pháp dựng phim và viral video từ 53 kỹ năng Marketing & Video hàng đầu.
+Bạn là Đạo diễn Hậu kỳ Video (Lead Video Editor & Director) của CLB Nhiếp ảnh LTD.
 
 ${LTD_KNOWLEDGE_BASE}
 
-${LTD_EXPERT_SKILLS_PROMPT}
+HƯỚNG DẪN SKILL ĐƯỢC NẠP TỪ REPO:
+${skillGuidance}
 
-QUY TẮC DỰNG VIDEO SHORT 9:16:
-1. [0-3s]: Hook thị giác cực mạnh kèm âm thanh đánh động, giữ chân người xem không lướt qua.
-2. [Thân video]: Nhịp cắt nhanh (2-3 giây/cảnh), đan xen giữa B-roll cận cảnh thao tác máy ảnh, nụ cười thanh xuân và phong cảnh bến sông Long Thành.
-3. [Subtitles]: Câu chữ súc tích, nhịp điệu ngắn, font hiển thị rõ ràng.
-4. [Outro]: Kêu gọi tương tác tự nhiên.
+QUY TẮC DỰNG VIDEO SHORT 9:16 (BỔ SUNG CHO LTD):
+1. [0-3s]: Hook thị giác cực mạnh kèm âm thanh đánh động (tiếng click máy ảnh, shutter, hoặc câu nói gây sốc), giữ chân người xem không lướt qua.
+2. [Thân video]: Nhịp cắt nhanh (2-3 giây/cảnh), đan xen giữa B-roll cận cảnh thao tác máy ảnh (xoay khâu độ, bấm shutter), góc máy POV, toàn cảnh dã ngoại (Flycam hồ Trị An), ánh sáng ven (rim light) giờ vàng.
+3. [Subtitles]: Câu chữ súc tích, nhịp điệu ngắn, font hiển thị rõ ràng (safe zone 720x1200), highlight từ khóa quan trọng.
+4. [Outro]: Kêu gọi tương tác tự nhiên (tag bạn bè, lưu bài, theo dõi CLB), logo LTD góc phải.
 
 ĐỊNH DẠNG ĐẦU RA (JSON FORMAT DUY NHẤT):
 Trả về DUY NHẤT một đối tượng JSON hợp lệ (không kèm markdown \`\`\`json) với cấu trúc:
@@ -62,15 +68,30 @@ Yêu cầu dựng video:
 - Tỷ lệ: ${ratio}
 `;
 
-    const response = await ai.models.generateContent({
-      model: selectedModel,
-      contents: userPrompt,
-      config: {
-        systemInstruction: systemPrompt,
-        temperature: 0.7,
-        responseMimeType: "application/json",
-      },
-    });
+    const generateWithModel = (requestedModel: string) =>
+      ai.models.generateContent({
+        model: requestedModel,
+        contents: userPrompt,
+        config: {
+          systemInstruction: systemPrompt,
+          temperature: 0.5,
+          thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
+          responseMimeType: "application/json",
+        },
+      });
+
+    let modelUsed = selectedModel;
+    let response;
+    try {
+      response = await generateWithModel(selectedModel);
+    } catch (error) {
+      if (!(error instanceof ApiError) || error.status < 500 || selectedModel === "gemini-3.5-flash-lite") {
+        throw error;
+      }
+
+      modelUsed = "gemini-3.5-flash-lite";
+      response = await generateWithModel(modelUsed);
+    }
 
     const responseText = response.text || "";
     let parsedEDL: EditDecisionList;
@@ -129,7 +150,7 @@ Yêu cầu dựng video:
     return NextResponse.json({
       success: true,
       data: parsedEDL,
-      modelUsed: selectedModel,
+      modelUsed,
     });
   } catch (error: any) {
     console.error("Lỗi AI EDL Generator:", error);

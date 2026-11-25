@@ -14,6 +14,35 @@ Mỗi tác phẩm mang một sắc màu riêng, nhưng tất cả đều chung m
 💐 Nhân ngày Nhà giáo Việt Nam 20/11, Long Thành Digital kính chúc quý thầy cô luôn mạnh khỏe, hạnh phúc và giữ mãi ngọn lửa nhiệt huyết với sự nghiệp trồng người!
 `;
 
+const EXPERT_COPYWRITING_RULES = `
+=== QUY TẮC CHUYÊN GIA (TỪ SKILL COPYWRITING) ===
+
+1. RULE OF SPECIFICITY (QUY TẮC CỤ THỂ HÓA):
+   - Người đọc phải NHÌN THẤY HOẶC NGHE THẤY hình ảnh: "tiếng màn trập đanh giòn của Sony Alpha", "lớp sương sớm bảng lảng ven hồ Trị An", "ánh đèn vàng ấm áp quán cà phê góc phố Long Thành", "bàn tay xoay nhẹ vòng khẩu độ f/1.4"
+   - Cấm từ sáo rỗng: "đột phá", "toàn diện", "nâng tầm", "hệ sinh thái", "chạm đến cảm xúc", "trải nghiệm tuyệt vời"
+   - Cấm contrast reveals: "Không chỉ là X, mà là Y", "Không X, không Y, không Z" → Nêu Y trực tiếp với lý do
+
+2. THE SWAP TEST (BÀI KIỂM TRA ĐỔI CHỦ):
+   - Nếu CLB/con ty khác copy nguyên văn dán vào trang của họ vẫn hợp → BÀI VIẾT THẤT BẠI
+   - Bài phải mang đậm linh hồn CLB Nhiếp Ảnh LTD: địa danh (hồ Trị An, bến sông Long Thành), thiết bị (Sony Alpha, ống kính 35mm f/1.4), văn hóa CLB (2 Ban: COMM/TECH), thành viên thật
+
+3. THREE-QUESTION GATE (MỖI CÂU PHẢI QUA 3 CÂU HỎI):
+   1) Người đọc có hình dung được không? (Cụ thể > trừu tượng)
+   2) Có chứng minh được đúng/sai không? (Có số liệu, quan sát > claim chung chung)
+   3) Đối thủ có viết được câu này không? (Nếu có → viết lại)
+
+4. STRUCTURE PER PLATFORM:
+   - Facebook: Hook (1 câu) → Body (đoạn ngắn, xuống dòng 2-3 câu) → Hashtags 3-5
+   - TikTok Script: [0-3s Visual+Audio Hook] → [3-15s Body: B-roll mỗi 2-3s, voiceover] → [CTA tự nhiên]
+   - Instagram Caption: Hook → Story/Insight → Question/CTA → Hashtags 5-10
+   - Website: Headline → Lead → H2 sections → Conclusion → CTA
+
+5. TONE "ĐỜI THƯỜNG" LTD:
+   - Như thành viên nói với thành viên: "Hôm nay trời đẹp, tụi mình ra hồ chụp bình minh"
+   - Không agency: "Chào mọi người, hôm nay LTD tổ chức..."
+   - Tránh: "thanh xuân", "giữ lại ký ức", "mỗi cú bấm", "chạm trái tim"
+`;
+
 function getGeminiErrorMessage(error: unknown): string {
   if (error instanceof ApiError) {
     switch (error.status) {
@@ -110,23 +139,30 @@ ${LTD_KNOWLEDGE_BASE}
 HƯỚNG DẪN SKILL ĐƯỢC NẠP TỪ REPO:
 ${skillGuidance}
 
+${EXPERT_COPYWRITING_RULES}
+
 MẪU GIỌNG LTD DO NGƯỜI DÙNG CHỌN:
 ${LTD_WRITING_STYLE_REFERENCE}
 Chỉ học giọng ấm áp, cách nói gần gũi, đoạn văn tự nhiên và cách gắn thông điệp với hoạt động thật. Đây không phải nguồn dữ kiện cho bài mới. Không chép lại câu chữ, cấu trúc lặp hoặc thông tin về hoa, thầy cô, ngày 20/11.
 
-ÁP DỤNG:
+ÁP DỤNG NGHIÊM NGẶT:
 - Viết đúng nền tảng, định dạng, đối tượng, giọng văn và độ dài người dùng yêu cầu.
-- Chỉ xem phần "Dữ kiện đã cung cấp" là sự thật. Không tự tạo địa điểm, sự kiện, lịch, thành viên, thiết bị đang sở hữu, số liệu hoặc trải nghiệm của CLB.
+- CHỈ xem phần "Dữ kiện đã cung cấp" là sự thật. Tuyệt đối KHÔNG tự tạo địa điểm, sự kiện, lịch, thành viên, thiết bị đang sở hữu, số liệu hoặc trải nghiệm của CLB.
 - Dùng góc viết được yêu cầu như điểm xuất phát, không ép vào đó nếu không hợp dữ kiện.
 - Khi loại nội dung là "auto", tự chọn cấu trúc phù hợp chủ đề. Đừng mặc định viết recap, kể chuyện tuổi trẻ hoặc kết bằng lời mời inbox.
-- Không lặp công thức "hook gây tò mò -> kể cảnh đẹp -> rút ra bài học -> CTA". Không mở mọi bài bằng câu hỏi, dấu ba chấm, một khung cảnh điện ảnh hoặc "Có những...".
-- Giọng "Đời thường": câu chữ như người trong CLB nói với người đọc quen; thẳng, giản dị, không cố làm văn. Tránh các cụm "tụi mình cùng nhau lớn lên", "giữ lại thanh xuân", "chạm đến cảm xúc", "mỗi cú bấm".
-- Nếu thiếu dữ kiện, viết ngắn và trung thực thay vì làm bài nghe có vẻ giàu trải nghiệm. Nêu điều cần bổ sung trong factsChecklist.
+- TUYỆT ĐỐI KHÔNG lặp công thức "hook gây tò mò -> kể cảnh đẹp -> rút ra bài học -> CTA". Không mở mọi bài bằng câu hỏi, dấu ba chấm, một khung cảnh điện ảnh hoặc "Có những...".
+- Giọng "Đời thường": câu chữ như người trong CLB nói với người đọc quen; thẳng, giản dị, không cố làm văn. TRÁNH tuyệt đối: "tụi mình cùng nhau lớn lên", "giữ lại thanh xuân", "chạm đến cảm xúc", "mỗi cú bấm", "nâng tầm", "đột phá", "toàn diện".
+- Nếu thiếu dữ kiện, viết NGẮN và TRUNG THỰC thay vì làm bài nghe có vẻ giàu trải nghiệm. Nêu điều cần bổ sung trong factsChecklist.
 - Không dùng cảnh máy ảnh, ánh sáng, địa điểm hay cảm xúc trang trí nếu chúng không giúp thông điệp. Không nhồi emoji, hashtag hoặc CTA.
 - Độ dài Facebook: short 40-80 từ, medium 80-140 từ, long 140-220 từ. Đừng kéo dài bài để lấp chỉ tiêu.
-- Trước khi trả lời, tự kiểm tra: cấu trúc có khác các hook gần đây không; người thật có nói câu này thành tiếng không; có câu nào chỉ để nghe "hay" mà không thêm thông tin không. Sửa hoặc bỏ câu đó.
-- Với kịch bản video ngắn, hook phải gắn với chủ đề; phân cảnh/voice-over cần quay được và không khẳng định điều chưa được cung cấp.
-- Trả về DUY NHẤT JSON hợp lệ theo schema, không kèm markdown:
+- TRƯỚC KHI TRẢ LỜI, TỰ KIỂM TRA (BẮT BUỘC):
+  1) Cấu trúc có khác các hook gần đây không?
+  2) Người thật có nói câu này thành tiếng không?
+  3) Có câu nào chỉ để nghe "hay" mà không thêm thông tin không? → SỬA HOẶC BỎ CÂU ĐÓ.
+  4) Mỗi claim có cụ thể hóa được không? (Rule of Specificity)
+  5) Đối thủ có viết được câu này không? (Swap Test)
+- Với kịch bản video ngắn: hook phải gắn với chủ đề; phân cảnh/voice-over cần quay được và không khẳng định điều chưa được cung cấp.
+- Trả về DUY NHẤT JSON hợp lệ theo schema, KHÔNG kèm markdown:
 {
   "hook": "Hook phù hợp định dạng",
   "body": "Nội dung hoàn chỉnh; kịch bản video có mốc thời gian và hình ảnh khi phù hợp",
@@ -154,7 +190,7 @@ Hook gần đây chỉ để tránh lặp (không sao chép): ${JSON.stringify(r
         contents: userPrompt,
         config: {
           systemInstruction: systemPrompt,
-          temperature: 0.8,
+          temperature: 0.6,
           thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
           responseMimeType: "application/json",
         },

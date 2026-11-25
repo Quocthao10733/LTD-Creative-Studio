@@ -4,6 +4,20 @@ import { getGeminiClient, LTD_KNOWLEDGE_BASE } from "@/lib/ai/gemini";
 import { GeminiModel, resolveGeminiModel } from "@/lib/ai/models";
 import { loadSkillGuidance } from "@/lib/ai/skills";
 
+const EXPERT_COPYWRITING_RULES = `
+=== QUY TẮC CHUYÊN GIA (TỪ SKILL COPYWRITING) ===
+
+1. RULE OF SPECIFICITY: Người đọc phải NHÌN THẤY/NGHE THẤY hình ảnh cụ thể (tiếng màn trập Sony, sương hồ Trị An, ánh đèn quán cà phê Long Thành, xoay khâu độ f/1.4). Cấm từ sáo: "đột phá", "toàn diện", "nâng tầm", "chạm đến cảm xúc".
+
+2. SWAP TEST: Nếu CLB khác copy nguyên văn vẫn hợp → THẤT BẠI. Phải mang linh hồn LTD (địa danh, thiết bị, 2 Ban COMM/TECH, thành viên thật).
+
+3. THREE-QUESTION GATE cho mỗi câu: (1) Hình dung được không? (2) Chứng minh được không? (3) Đối thủ viết được không?
+
+4. TONE "ĐỜI THƯỜNG" LTD: Như thành viên nói với thành viên. Tránh: "thanh xuân", "giữ lại ký ức", "mỗi cú bấm", "nâng tầm".
+
+5. KHI CHỈNH SỬA: Chỉ sửa phạm vi yêu cầu. Giữ phần tốt. Không thêm dữ kiện giả. Loại bỏ câu sáo, nhịp máy móc.
+`;
+
 interface ChatRefineRequest {
   currentHook?: string;
   currentBody?: string;
@@ -102,8 +116,10 @@ ${LTD_KNOWLEDGE_BASE}
 HƯỚNG DẪN SKILL ĐƯỢC NẠP TỪ REPO:
 ${skillGuidance}
 
-Chỉnh sửa đúng phạm vi người dùng yêu cầu. Giữ nguyên phần đang ổn; không tự thêm dữ kiện, CTA, lời hứa, địa điểm, thời gian hoặc trải nghiệm mới. Viết tự nhiên bằng tiếng Việt, loại bỏ câu sáo và nhịp văn máy móc.
-Trả về JSON hợp lệ duy nhất:
+${EXPERT_COPYWRITING_RULES}
+
+Chỉnh sửa ĐÚNG PHẠM VI người dùng yêu cầu. Giữ nguyên phần đang ổn; KHÔNG tự thêm dữ kiện, CTA, lời hứa, địa điểm, thời gian hoặc trải nghiệm mới. Viết tự nhiên bằng tiếng Việt, loại bỏ câu sáo và nhịp văn máy móc.
+Trả về JSON hợp lệ DUY NHẤT:
 {
   "reply": "Tóm tắt ngắn phần đã sửa",
   "revisedHook": "Hook sau chỉnh sửa",
@@ -130,7 +146,7 @@ ${userMessage.trim()}
         contents: userPrompt,
         config: {
           systemInstruction: systemPrompt,
-          temperature: 0.7,
+          temperature: 0.5,
           thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
           responseMimeType: "application/json",
         },

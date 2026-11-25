@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 
-export type AiSkillName = "copywriting" | "content-strategy" | "social" | "video";
+export type AiSkillName = "copywriting" | "content-strategy" | "social" | "video" | "ad-creative";
 
 const SKILL_SECTIONS: Record<AiSkillName, readonly string[]> = {
   copywriting: [
@@ -16,6 +16,7 @@ const SKILL_SECTIONS: Record<AiSkillName, readonly string[]> = {
   ],
   social: ["No AI Tells", "Content Ideas by Situation", "Short-Form Video (TikTok, Reels, Shorts)"],
   video: ["Video Production Workflows", "Common Mistakes"],
+  "ad-creative": ["Platform Specs", "Generative Tools", "Static Ad Templates", "Short-Form Video Specs", "Motion Video Ads"],
 };
 
 const SKILL_PATHS: Record<AiSkillName, string> = {
@@ -23,6 +24,7 @@ const SKILL_PATHS: Record<AiSkillName, string> = {
   "content-strategy": ".agents/skills/content-strategy/SKILL.md",
   social: ".agents/skills/social/SKILL.md",
   video: ".agents/skills/video/SKILL.md",
+  "ad-creative": ".agents/skills/ad-creative/SKILL.md",
 };
 
 function extractSections(markdown: string, requestedSections: readonly string[]): string[] {
