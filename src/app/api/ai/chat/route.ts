@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { ApiError, ThinkingLevel } from "@google/genai";
 import { getGeminiClient, LTD_KNOWLEDGE_BASE } from "@/lib/ai/gemini";
-import { resolveGeminiModel } from "@/lib/ai/models";
+import { GeminiModel, resolveGeminiModel } from "@/lib/ai/models";
 import { loadSkillGuidance } from "@/lib/ai/skills";
 
 interface ChatRefineRequest {
@@ -17,6 +18,35 @@ interface RefinedContent {
   revisedHook: string;
   revisedBody: string;
   revisedHashtags: string[];
+}
+
+function getChatErrorMessage(error: unknown): string {
+  if (error instanceof ApiError) {
+    switch (error.status) {
+      case 400:
+      case 401:
+      case 403:
+        return "Gemini từ chối API key hoặc yêu cầu. Hãy kiểm tra key và quyền truy cập Gemini API.";
+      case 404:
+        return "Mô hình Gemini không khả dụng cho key này. Hãy tải lại trang và thử lại.";
+      case 429:
+        return "Gemini đang giới hạn lượt gọi hoặc đã hết quota. Hãy kiểm tra hạn mức của key.";
+      default:
+        return error.status >= 500
+          ? `Dịch vụ Gemini đang lỗi tạm thời (HTTP ${error.status}). Hãy thử lại sau.`
+          : `Gemini trả về lỗi HTTP ${error.status}.`;
+    }
+  }
+
+  if (error instanceof SyntaxError) {
+    return "Gemini trả về nội dung không đúng định dạng. Hãy thử chỉnh sửa lại.";
+  }
+
+  if (error instanceof Error && error.message === "Gemini trả về nội dung chỉnh sửa không đúng định dạng.") {
+    return error.message;
+  }
+
+  return "Không thể kết nối Gemini. Hãy kiểm tra kết nối mạng rồi thử lại.";
 }
 
 export async function POST(request: NextRequest) {
@@ -94,15 +124,30 @@ Yêu cầu chỉnh sửa:
 ${userMessage.trim()}
 `;
 
-    const response = await ai.models.generateContent({
-      model: selectedModel,
-      contents: userPrompt,
-      config: {
-        systemInstruction: systemPrompt,
-        temperature: 0.7,
-        responseMimeType: "application/json",
-      },
-    });
+    const generateWithModel = (requestedModel: GeminiModel) =>
+      ai.models.generateContent({
+        model: requestedModel,
+        contents: userPrompt,
+        config: {
+          systemInstruction: systemPrompt,
+          temperature: 0.7,
+          thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
+          responseMimeType: "application/json",
+        },
+      });
+
+    let modelUsed = selectedModel;
+    let response;
+    try {
+      response = await generateWithModel(selectedModel);
+    } catch (error) {
+      if (!(error instanceof ApiError) || error.status < 500 || selectedModel === "gemini-3.5-flash-lite") {
+        throw error;
+      }
+
+      modelUsed = "gemini-3.5-flash-lite";
+      response = await generateWithModel(modelUsed);
+    }
 
     const responseText = response.text || "";
     const cleaned = responseText.replace(/```json/g, "").replace(/```/g, "").trim();
@@ -119,14 +164,14 @@ ${userMessage.trim()}
     return NextResponse.json({
       success: true,
       data: parsed,
-      modelUsed: selectedModel,
+      modelUsed,
     });
   } catch (error) {
     console.error("Lỗi Gemini khi chỉnh sửa nội dung:", error);
     return NextResponse.json(
       {
         success: false,
-        error: "Không thể chỉnh sửa bằng Gemini. Vui lòng kiểm tra API Key, mô hình đã chọn hoặc thử lại.",
+        error: getChatErrorMessage(error),
       },
       { status: 502 }
     );
