@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { ApiError } from "@google/genai";
+import { ApiError, ThinkingLevel } from "@google/genai";
 import { getGeminiClient, LTD_KNOWLEDGE_BASE } from "@/lib/ai/gemini";
 import { resolveGeminiModel } from "@/lib/ai/models";
 import { loadSkillGuidance } from "@/lib/ai/skills";
@@ -27,7 +27,7 @@ function getGeminiErrorMessage(error: unknown): string {
         return "Gemini đang giới hạn lượt gọi hoặc đã hết quota. Hãy kiểm tra hạn mức của key rồi thử lại.";
       default:
         return error.status >= 500
-          ? "Dịch vụ Gemini đang gặp sự cố tạm thời. Hãy thử lại sau."
+          ? `Dịch vụ Gemini đang lỗi tạm thời (HTTP ${error.status}). Hãy thử lại sau.`
           : `Gemini trả về lỗi HTTP ${error.status}. Hãy kiểm tra cấu hình key và mô hình.`;
     }
   }
@@ -154,6 +154,7 @@ Hook gần đây chỉ để tránh lặp (không sao chép): ${JSON.stringify(r
       config: {
         systemInstruction: systemPrompt,
         temperature: 0.8,
+        thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
         responseMimeType: "application/json",
       },
     });

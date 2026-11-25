@@ -49,5 +49,17 @@ export function getGeminiClient(): GoogleGenAI {
       "Chưa cấu hình Google Gemini API Key! Vui lòng cấu hình GEMINI_API_KEY trong file .env.local hoặc nhập API Key trong trang Cài Đặt (/settings)."
     );
   }
-  return new GoogleGenAI({ apiKey: key });
+  return new GoogleGenAI({
+    apiKey: key,
+    httpOptions: {
+      timeout: 25_000,
+      retryOptions: {
+        attempts: 2,
+        initialDelay: 0.5,
+        maxDelay: 1,
+        expBase: 2,
+        jitter: 0.2,
+      },
+    },
+  });
 }
