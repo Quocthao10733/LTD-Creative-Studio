@@ -1,43 +1,43 @@
 export const WRITING_ANGLES = [
   {
     id: "plainspoken",
-    instruction: "Nói thẳng điều cần nói ngay từ đầu; không dựng cảnh mở bài.",
+    instruction: "Nói thẳng ngay từ đầu: Hook = 1 câu tóm gọn thông điệp chính + 1 chi tiết/con số cụ thể. Ví dụ: 'Sáng nay 5h30, 12 người LTD đã có mặt tại đập hồ Trị An khi trời vẫn còn đen kịt.' Không dựng cảnh, không câu hỏi, không 'Có những...'.",
   },
   {
     id: "real-detail",
-    instruction: "Bắt đầu từ một chi tiết có thật trong dữ kiện; nếu không có thì không tự tạo chi tiết.",
+    instruction: "Mở bài bằng 1 chi tiết CÓ THẬT trong dữ kiện: tiếng âm thanh, hình ảnh, con số, câu nói. Ví dụ: 'Chỉ nghe tiếng màn trập Sony A7IV ctrica-ctrica đều đều trong sương sớm.' Nếu dữ kiện không có chi tiết → chuyển sang plainspoken.",
   },
   {
     id: "useful-tip",
-    instruction: "Ưu tiên một điều hữu ích người đọc có thể áp dụng; chỉ dùng khi chủ đề có cơ sở.",
+    instruction: "Hook = 1 mẹo/quy trình thực tế có thể áp dụng ngay. Ví dụ: 'Muốn ảnh bóng người tách nền nét tại quán cà phê góc phố Long Thành? Chỉ cần 1 đèn pin + tường trắng.' Chỉ dùng khi chủ đề là tips/kỹ thuật VÀ có dữ kiện hỗ trợ.",
   },
   {
     id: "point-of-view",
-    instruction: "Dùng một nhận xét hoặc góc nhìn riêng có căn cứ; không giả làm ý kiến của thành viên.",
+    instruction: "Hook = 1 quan điểm/nhận xét CÓ CĂN CỨ từ dữ kiện. Ví dụ: 'Workshop 3 giờ, 0 slide PowerPoint — chỉ thực hành, mới thấy học nhanh đến thế.' Không bịa ý kiến, không nói thay thành viên.",
   },
   {
     id: "photo-first",
-    instruction: "Đặt bức ảnh/khoảnh khắc nhìn thấy được làm trọng tâm; không tự mô tả ảnh chưa được cung cấp.",
+    instruction: "Hook tập trung vào 1 bức ảnh/khoảnh khắc CÓ THẬT trong dữ kiện. Ví dụ: 'Tấm ảnh bình minh hồ Trị An này: ISO 100, f/8, 1/30s, chân máy đặt ngay mép nước.' Không mô tả ảnh chưa có, không dùng từ 'hoàng hôn lung linh' kiểu sáo.",
   },
   {
     id: "behind-the-scenes",
-    instruction: "Kể về cách làm hoặc hậu trường chỉ khi người dùng đã cung cấp dữ kiện thật.",
+    instruction: "Hook = 1 cảnh hậu trường/quy trình CÓ THẬT. Ví dụ: 'Anh Huy (TECH) dắt 20 bạn đi săn sáng cửa sổ tại studio LTD — mỗi người chỉ được bấm 10 tấm.' Chỉ dùng khi dữ kiện có mô tả quy trình/hành động thực tế.",
   },
   {
     id: "reader-question",
-    instruction: "Mở bằng một câu hỏi cụ thể người đọc có thể thật sự quan tâm; tránh câu hỏi câu tương tác sáo.",
+    instruction: "Hook = 1 câu hỏi CỤ THỂ mà người đọc LTD thực sự quan tâm. Ví dụ: 'Làm sao chụp được bóng người tách nền nét mà không cần studio?' Không hỏi câu tương tác sáo: 'Bạn có thích chụp ảnh không?', 'Agree không?'.",
   },
   {
     id: "short-note",
-    instruction: "Viết như một ghi chú ngắn, gọn; không cần bài học cuộc sống hay kết luận cảm động.",
+    instruction: "Viết như ghi chú nhắn tin cho bạn CLB: ngắn, gọn, thẳng. Hook = thông tin chính. Ví dụ: 'CLB tuyển 15 bạn Gen 2026, không cần có máy, chỉ cần thích chụp. Form đăng ký trong bio.' Không bài học, không cảm động, không CTA hụi hụi.",
   },
   {
     id: "mini-story",
-    instruction: "Dùng nhịp kể chuyện ngắn chỉ khi có sự việc thật; không bịa nhân vật, lời thoại hoặc diễn biến.",
+    instruction: "Kể 1 sự việc THẬT có nhân vật, hành động, kết quả. Hook mở đầu bằng hành động. Ví dụ: 'Anh Khang (TECH) test setup portrait 3 phút tại Highland Coffee Long Thành — ra tấm ảnh tách nền nét như studio.' Không bịa nhân vật, không tạo kịch tính giả.",
   },
   {
     id: "community-invite",
-    instruction: "Tập trung vào lời mời tham gia rõ ràng, không tạo khan hiếm hoặc hứa hẹn nếu chưa có dữ kiện.",
+    instruction: "Hook = lời mời THỰC TẾ, rõ ràng, có lợi ích/địa điểm/thời gian cụ thể. Ví dụ: 'Thứ 7 tuần sau 5h30 sáng, LTD phototrip hồ Trị An — free joining, chỉ cần mang máy và nước uống.' Không tạo khan hiếm giả, không hứa hẹn nếu chưa xác nhận.",
   },
 ] as const;
 

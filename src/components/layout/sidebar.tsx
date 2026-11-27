@@ -20,6 +20,7 @@ import {
   LogOut,
   LogIn,
   ShieldCheck,
+  Database,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/auth-context";
@@ -34,6 +35,7 @@ const mainMenuItems = [
 ];
 
 const secondaryMenuItems = [
+  { name: "Kho bài mẫu AI", href: "/knowledge", icon: Database },
   { name: "Lịch nội dung", href: "/calendar", icon: CalendarDays },
   { name: "Thư viện LTD", href: "/library", icon: ImageIcon },
   { name: "Danh sách thành viên", href: "/members", icon: Users },

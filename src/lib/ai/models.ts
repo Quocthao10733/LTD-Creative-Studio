@@ -3,25 +3,45 @@ const GEMINI_MODEL_CHANGE_EVENT = "ltd-gemini-model-change";
 
 export const GEMINI_MODEL_OPTIONS = [
   {
-    id: "gemini-3.8-flash",
-    name: "Gemini 3.8 Flash",
-    desc: "Mô hình Flash ổn định hiện tại, phù hợp viết và xử lý nội dung.",
+    id: "gemini-2.5-flash",
+    name: "Gemini 2.5 Flash",
+    desc: "Mô hình mới nhất hỗ trợ suy luận tốt, viết tiếng Việt tự nhiên và phân tích brief chính xác.",
     badge: "Khuyên dùng",
   },
   {
-    id: "gemini-3.5-flash-lite",
-    name: "Gemini 3.5 Flash-Lite",
-    desc: "Nhanh và tiết kiệm cho nội dung ngắn, tác vụ thường ngày.",
+    id: "gemini-2.0-flash",
+    name: "Gemini 2.0 Flash",
+    desc: "Mô hình Flash ổn định, tốc độ nhanh, phù hợp đa số tác vụ sáng tạo.",
+    badge: "Ổn định",
+  },
+  {
+    id: "gemini-2.0-flash-lite",
+    name: "Gemini 2.0 Flash-Lite",
+    desc: "Nhanh, tiết kiệm quota, phù hợp nội dung ngắn và fallback khi quá tải.",
     badge: "Tiết kiệm",
+  },
+  {
+    id: "gemini-1.5-flash",
+    name: "Gemini 1.5 Flash",
+    desc: "Mô hình dự phòng tương thích rộng cho mọi API key.",
+    badge: "Fallback",
   },
 ] as const;
 
 export type GeminiModel = (typeof GEMINI_MODEL_OPTIONS)[number]["id"];
 
-export const DEFAULT_GEMINI_MODEL: GeminiModel = "gemini-3.8-flash";
+export const DEFAULT_GEMINI_MODEL: GeminiModel = "gemini-2.5-flash";
 
 export function isGeminiModel(value: unknown): value is GeminiModel {
   return GEMINI_MODEL_OPTIONS.some((option) => option.id === value);
+}
+
+export function getServerDefaultGeminiModel(): GeminiModel {
+  const envModel = process.env.GEMINI_MODEL?.trim();
+  if (isGeminiModel(envModel)) {
+    return envModel;
+  }
+  return DEFAULT_GEMINI_MODEL;
 }
 
 export function getStoredGeminiModel(): GeminiModel {
@@ -50,7 +70,7 @@ export function saveGeminiModel(model: GeminiModel): void {
 
 export function resolveGeminiModel(value: unknown): GeminiModel | null {
   if (value === undefined || value === null || value === "") {
-    return DEFAULT_GEMINI_MODEL;
+    return getServerDefaultGeminiModel();
   }
 
   return isGeminiModel(value) ? value : null;

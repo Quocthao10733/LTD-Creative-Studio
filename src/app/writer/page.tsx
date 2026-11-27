@@ -94,6 +94,12 @@ export default function ContentWriterPage() {
   const [outputModel, setOutputModel] = React.useState<string | null>(null);
   const [editableBody, setEditableBody] = React.useState("");
   const [editableHook, setEditableHook] = React.useState("");
+  const [aiDraftSnapshot, setAiDraftSnapshot] = React.useState("");
+  const [feedbackRating, setFeedbackRating] = React.useState<number>(4);
+  const [feedbackEditTypes, setFeedbackEditTypes] = React.useState<string[]>([]);
+  const [feedbackReason, setFeedbackReason] = React.useState("");
+  const [feedbackSubmitting, setFeedbackSubmitting] = React.useState(false);
+  const [promotingSample, setPromotingSample] = React.useState(false);
 
   // Chat with AI state
   const [activeWorkspaceTab, setActiveWorkspaceTab] = React.useState<"editor" | "chat">("editor");
@@ -207,6 +213,7 @@ export default function ContentWriterPage() {
         setOutputModel(modelUsed || null);
         setEditableHook(json.data.hook);
         setEditableBody(finalBody);
+        setAiDraftSnapshot(`${json.data.hook}\n\n${json.data.body}`);
         saveToHistory(personalizedData, modelUsed);
       } else {
         setErrorMessage(json.error || "Không thể tạo nội dung. Vui lòng thử lại!");
@@ -254,6 +261,68 @@ export default function ContentWriterPage() {
       setErrorMessage("Lỗi khi lưu bài viết: " + err.message);
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleSendEditorialFeedback = async () => {
+    if (!output) return;
+    setFeedbackSubmitting(true);
+    try {
+      const res = await fetch("/api/knowledge/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt_version: output.prompt_version || "writer-v2.0.0",
+          model_id: outputModel || "unknown",
+          retrieved_sample_ids: output.source_sample_ids || [],
+          ai_draft: aiDraftSnapshot || `${output.hook}\n\n${output.body}`,
+          human_final: `${editableHook}\n\n${editableBody}`,
+          edit_types: feedbackEditTypes,
+          reason_for_edits: feedbackReason,
+          review_rating: feedbackRating,
+          approved_as_golden_sample: false,
+          reviewer_role: profile?.role || "content_editor",
+        }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setSuccessToast("Đã ghi nhận Editorial Feedback để cải thiện AI!");
+        setFeedbackReason("");
+        setTimeout(() => setSuccessToast(null), 3500);
+      }
+    } catch {
+      setErrorMessage("Lỗi khi gửi Editorial Feedback.");
+    } finally {
+      setFeedbackSubmitting(false);
+    }
+  };
+
+  const handlePromoteToGoldenSample = async () => {
+    if (!output) return;
+    setPromotingSample(true);
+    try {
+      const res = await fetch("/api/knowledge/samples", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          format: "text",
+          rawContent: `${editableHook}\n\n${editableBody}`,
+          title: topic.trim() || editableHook.slice(0, 60),
+          platform,
+          category: postType === "auto" ? "event_recap" : postType,
+          style_labels: [tone],
+          observed_style_notes: "Đề xuất từ AI Content Writer sau khi thành viên biên tập.",
+        }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setSuccessToast(`Đã đưa vào Kho Bài Mẫu (${json.imported_ids?.[0] || "UNREVIEWED_CANDIDATE"}) chờ Admin chấm Tier!`);
+        setTimeout(() => setSuccessToast(null), 4000);
+      }
+    } catch {
+      setErrorMessage("Lỗi khi đưa bài vào Kho Golden Samples.");
+    } finally {
+      setPromotingSample(false);
     }
   };
 
@@ -1039,12 +1108,31 @@ export default function ContentWriterPage() {
                     </p>
                   </div>
 
-                  {/* 5. Facts Checklist */}
-                  <div className="p-4 rounded-2xl bg-amber-50/60 border border-amber-200/80 space-y-1.5">
-                    <div className="flex items-center gap-2 text-amber-800 font-bold text-xs">
-                      <CheckCircle2 className="w-4 h-4 text-amber-600" />
-                      <span>Kiểm tra tính xác thực &amp; Lưu ý dữ kiện</span>
+                  {/* 5. Facts Checklist & Structured Fact Check */}
+                  <div className="p-4 rounded-2xl bg-amber-50/60 border border-amber-200/80 space-y-2.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 text-amber-800 font-bold text-xs">
+                        <CheckCircle2 className="w-4 h-4 text-amber-600" />
+                        <span>Kiểm tra tính xác thực &amp; Dữ kiện thiếu</span>
+                      </div>
+                      {output.source_sample_ids && output.source_sample_ids.length > 0 && (
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-100 text-amber-900">
+                          Mẫu tham chiếu: {output.source_sample_ids.join(", ")}
+                        </span>
+                      )}
                     </div>
+
+                    {output.fact_check?.missing_information && output.fact_check.missing_information.length > 0 && (
+                      <div className="p-2.5 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700 space-y-1">
+                        <p className="font-bold">⚠️ Cần xác nhận / bổ sung trước khi đăng:</p>
+                        <ul className="list-disc pl-4 space-y-0.5">
+                          {output.fact_check.missing_information.map((m, i) => (
+                            <li key={i}>{m}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
                     <ul className="space-y-1 text-xs text-slate-600">
                       {output.factsChecklist.map((item, idx) => (
                         <li key={idx} className="flex items-start gap-1.5">
@@ -1053,6 +1141,91 @@ export default function ContentWriterPage() {
                         </li>
                       ))}
                     </ul>
+                  </div>
+
+                  {/* 6. Editorial Feedback Loop & Promote to Golden Samples */}
+                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/90 space-y-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="text-xs font-extrabold text-slate-800">
+                        📝 Editorial Feedback Loop (Cải thiện Brand Writer)
+                      </span>
+                      <button
+                        type="button"
+                        onClick={handlePromoteToGoldenSample}
+                        disabled={promotingSample}
+                        className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold transition disabled:opacity-50 cursor-pointer"
+                      >
+                        {promotingSample ? "Đang lưu..." : "★ Gửi vào Kho Golden Samples"}
+                      </button>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2 text-[11px]">
+                      <span className="font-semibold text-slate-600">Đánh giá:</span>
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          type="button"
+                          onClick={() => setFeedbackRating(star)}
+                          className={`px-2 py-0.5 rounded-lg font-bold border cursor-pointer ${
+                            feedbackRating === star
+                              ? "bg-blue-600 text-white border-blue-600"
+                              : "bg-white text-slate-600 border-slate-200"
+                          }`}
+                        >
+                          {star}★
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="flex flex-wrap gap-1.5 text-[11px]">
+                      {[
+                        { id: "remove_cliche", label: "Bỏ câu sáo" },
+                        { id: "add_verified_detail", label: "Thêm chi tiết thật" },
+                        { id: "change_hook", label: "Đổi Hook" },
+                        { id: "shorten_sentence", label: "Rút gọn câu" },
+                        { id: "tone_adjustment", label: "Chỉnh giọng văn" },
+                        { id: "fix_factual_error", label: "Sửa lỗi sự thật" },
+                      ].map((opt) => {
+                        const checked = feedbackEditTypes.includes(opt.id);
+                        return (
+                          <button
+                            key={opt.id}
+                            type="button"
+                            onClick={() =>
+                              setFeedbackEditTypes((prev) =>
+                                checked ? prev.filter((x) => x !== opt.id) : [...prev, opt.id]
+                              )
+                            }
+                            className={`px-2.5 py-1 rounded-lg border font-medium cursor-pointer ${
+                              checked
+                                ? "bg-blue-50 border-blue-400 text-blue-700"
+                                : "bg-white border-slate-200 text-slate-600"
+                            }`}
+                          >
+                            {checked ? "✓ " : ""}
+                            {opt.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={feedbackReason}
+                        onChange={(e) => setFeedbackReason(e.target.value)}
+                        placeholder="Lý do chỉnh sửa (tùy chọn)..."
+                        className="flex-1 px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-xs"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleSendEditorialFeedback}
+                        disabled={feedbackSubmitting}
+                        className="px-4 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold disabled:opacity-50 cursor-pointer"
+                      >
+                        {feedbackSubmitting ? "Đang gửi..." : "Gửi Feedback"}
+                      </button>
+                    </div>
                   </div>
                 </div>
               ) : (

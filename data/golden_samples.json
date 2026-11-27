@@ -1,0 +1,281 @@
+{
+  "dataset_meta": {
+    "dataset_status": "INITIAL_BATCH",
+    "sample_count": 8,
+    "target_min": 20,
+    "target_max": 30,
+    "source_page": "LTD - Long Thành Digital Photo Club",
+    "last_updated": "2026-11-27T10:18:00.000Z"
+  },
+  "samples": [
+    {
+      "sample_id": "LTD-POST-001",
+      "batch_id": "BATCH_01",
+      "title": "RECAP GẶP MẶT & CHIA TAY THẦY TỪ NGỌC LONG",
+      "platform": "facebook",
+      "category": "event_recap",
+      "category_label": "Event recap / tri ân / chân dung nhân vật",
+      "style_labels": [
+        "cinematic_emotional_recap",
+        "tribute",
+        "photography_metaphor"
+      ],
+      "observed_style_notes": "Tiêu đề recap viết hoa; mở bài mời người đọc nhìn lại sự kiện; dùng hình ảnh ẩn dụ “người thắp sáng tri thức”, “người lái đò”; kết bằng một câu quote liên hệ nhiếp ảnh với cảm xúc.",
+      "original_text": "🎞️ [RECAP] KHOẢNH KHẮC GẶP MẶT & CHIA TAY THẦY TỪ NGỌC LONG – NGƯỜI THẮP SÁNG TRI THỨC.\n\n📷 Các bạn hãy cùng LTD nhìn lại những hình ảnh trong buổi sáng thứ Hai đầy cảm xúc của toàn thể THPT Long Thành, cùng với thầy Từ Ngọc Long – người hiệu trưởng đáng kính, người “người cha” đã tận tâm dẫn dắt và đồng hành cùng bao thế hệ học sinh của ngôi trường thân yêu này.\n\n✨ Dẫu hành trình công tác của thầy sắp khép lại, nhưng hình ảnh người thầy tận tụy, người “lái đò thầm lặng” ấy sẽ mãi được lưu giữ — không chỉ trong ký ức, mà còn qua từng khung hình. 💫\n\n“Có những khoảnh khắc không cần ánh đèn flash, vì cảm xúc đã đủ sáng...”",
+      "credits": {
+        "content": null,
+        "design": null
+      },
+      "source_page": "LTD - Long Thành Digital Photo Club",
+      "source_type": "user_supplied_fanpage_post",
+      "source_url": null,
+      "published_at": null,
+      "engagement_metrics": null,
+      "contact_footer": "redacted_from_training_copy",
+      "approval_status": "UNREVIEWED_CANDIDATE",
+      "quality_tier": null,
+      "approved_for_retrieval": true,
+      "rights_confirmed": true,
+      "contains_pii": false,
+      "review_notes": "Batch 01 – chưa chấm Tier A/B/C.",
+      "created_at": "2026-11-27T10:18:00.000Z",
+      "updated_at": "2026-11-27T10:18:00.000Z"
+    },
+    {
+      "sample_id": "LTD-POST-002",
+      "batch_id": "BATCH_01",
+      "title": "Ở NƠI THANH XUÂN CÒN Ở LẠI: HẸN NHAU DƯỚI TÁN CÂY",
+      "platform": "facebook",
+      "category": "photo_story",
+      "category_label": "Creative concept / nostalgic storytelling",
+      "style_labels": [
+        "nostalgic_storytelling",
+        "dialogue_hook",
+        "school_memory",
+        "photo_concept"
+      ],
+      "observed_style_notes": "Mở đầu bằng hội thoại ngắn; lấy một địa điểm quen thuộc làm điểm neo câu chuyện; mô tả ánh sáng, sân trường, bóng áo trắng; kết bằng thông điệp.",
+      "original_text": "[Ở NƠI THANH XUÂN CÒN Ở LẠI]\n– Hẹn nhau dưới tán cây –\n\n“– Mai tụi mình ra tán cây chỗ cũ nha?\n– Làm gì vậy?\n– Không biết… chỉ là thấy nhớ kỉ niệm...” 🍃\n\nGiữa sân trường đầy nắng, có một nơi khiến bước chân ta chậm lại — tán cây năm ấy.\n\n“Có những buổi chiều, nắng nghiêng qua tán lá, những bóng áo trắng cùng dừng lại dưới gốc cây quen…\nChỉ thế thôi, mà thanh xuân như được giữ lại thêm một chút.” 🌼\n\n• Nơi từng vang tiếng cười trong veo.\n• Nơi những ánh nhìn ngập ngừng hóa thành kỷ niệm.\n• Nơi từng chứng kiến bao câu chuyện vụn vặt của tuổi học trò.\n\nMột cuộc hẹn không lời, chỉ là cùng nhau đợi nắng dịu, cùng nhau bước về trên con đường quen thuộc. ☀️\n\nGiữa dòng người vội vã, khoảnh khắc bình yên ấy lại trở thành một phần ký ức trong trẻo nhất của thanh xuân — thanh xuân không đo bằng tháng năm, mà bằng những khoảnh khắc khiến tim ta thấy mình còn ấm áp. 💛\n\n📝 Thông điệp:\nThanh xuân không chỉ là những ngày hối hả, mà là những phút giây lặng lẽ khiến ta mỉm cười khi nhớ lại — nơi tán cây, nơi ký ức vẫn còn vương lại một chút nắng trong tim. 🌿",
+      "credits": {
+        "content": "Yến Nhi",
+        "design": "Trung Kiên"
+      },
+      "source_page": "LTD - Long Thành Digital Photo Club",
+      "source_type": "user_supplied_fanpage_post",
+      "source_url": null,
+      "published_at": null,
+      "engagement_metrics": null,
+      "contact_footer": "redacted_from_training_copy",
+      "approval_status": "UNREVIEWED_CANDIDATE",
+      "quality_tier": null,
+      "approved_for_retrieval": true,
+      "rights_confirmed": true,
+      "contains_pii": false,
+      "review_notes": "Batch 01 – chưa chấm Tier A/B/C.",
+      "created_at": "2026-11-27T10:18:00.000Z",
+      "updated_at": "2026-11-27T10:18:00.000Z"
+    },
+    {
+      "sample_id": "LTD-POST-003",
+      "batch_id": "BATCH_01",
+      "title": "Ở NƠI THANH XUÂN CÒN Ở LẠI: ĐIỀU GIỮ MÃI TRONG NGĂN BÀN",
+      "platform": "facebook",
+      "category": "photo_story",
+      "category_label": "Creative concept / nostalgic storytelling",
+      "style_labels": [
+        "nostalgic_storytelling",
+        "object_as_story_anchor",
+        "school_memory"
+      ],
+      "observed_style_notes": "Dùng một đồ vật quen thuộc (ngăn bàn, lá thư) làm chất liệu kể chuyện; đi từ chi tiết đời thường sang rung động và thông điệp khái quát.",
+      "original_text": "[Ở NƠI THANH XUÂN CÒN Ở LẠI]\n– Điều giữ mãi trong ngăn bàn –\n\nThanh xuân gắn liền với những điều giản đơn và thân thuộc — nơi cất giấu những vụng dại dưới bàn học.\n\nGiữa cái ồn ào của lớp học năm ấy, ai cũng có một góc riêng để giấu đi cái ngây ngô của mình, nơi chất đầy những mảnh giấy chi chít chữ và vài “phao cứu sinh” nhỏ bé. Nhưng rồi một ngày, nơi cất giữ bí mật ấy bỗng bị “xâm phạm”, chỉ còn lại một lá thư gấp gọn, nằm lặng im giữa bao kỷ niệm 🍂\n\n💌 Lá thư ấy như cánh cửa mở ra một hành trình khác của thanh xuân — nơi những rung động vụng về được hóa thành nỗi nhớ. Nó khép lại góc nhỏ lặng lẽ năm nào, để nhường chỗ cho một trang mới, trong trẻo và dịu dàng hơn.\n\n📝 Thông điệp:\nThanh xuân là khoảng thời gian đẹp đẽ được dệt nên từ những điều nhỏ bé, ngây ngô và vụng dại và chính những điều tưởng chừng vụn vặt ấy lại trở thành ký ức đáng trân trọng nhất.",
+      "credits": {
+        "content": "Thảo Nguyên",
+        "design": "Quốc Hào"
+      },
+      "source_page": "LTD - Long Thành Digital Photo Club",
+      "source_type": "user_supplied_fanpage_post",
+      "source_url": null,
+      "published_at": null,
+      "engagement_metrics": null,
+      "contact_footer": "redacted_from_training_copy",
+      "approval_status": "UNREVIEWED_CANDIDATE",
+      "quality_tier": null,
+      "approved_for_retrieval": true,
+      "rights_confirmed": true,
+      "contains_pii": false,
+      "review_notes": "Batch 01 – chưa chấm Tier A/B/C.",
+      "created_at": "2026-11-27T10:18:00.000Z",
+      "updated_at": "2026-11-27T10:18:00.000Z"
+    },
+    {
+      "sample_id": "LTD-POST-004",
+      "batch_id": "BATCH_01",
+      "title": "THE NEXT FRAME: GEN 3 CHÍNH THỨC LÊN SÓNG",
+      "platform": "facebook",
+      "category": "member_welcome",
+      "category_label": "Member welcome / community building",
+      "style_labels": [
+        "member_welcome",
+        "community_building",
+        "youthful_encouragement"
+      ],
+      "observed_style_notes": "Tiêu đề chiến dịch có tên tiếng Anh; lời chào trực tiếp; nói về sự đa dạng cá tính của thành viên; nhấn mạnh trải nghiệm, học hỏi và đồng hành.",
+      "original_text": "📸 THE NEXT FRAME – GEN 3 CHÍNH THỨC LÊN SÓNG!\n\nMột hành trình mới lại bắt đầu, và lần này, LTD có thêm những gương mặt mới cùng những màu sắc rất riêng!\n\nChào mừng GEN 3 – thế hệ thành viên mới của Long Thành Digital Photo Club! 🎉\n\nMỗi người đến với LTD bằng một cá tính, một câu chuyện và có thể là một lý do khác nhau. Có thể là sự tò mò với chiếc máy ảnh, niềm yêu thích sáng tạo, hay đơn giản chỉ là mong muốn được thử sức ở một môi trường mới. Nhưng từ hôm nay, tất cả sẽ cùng gặp nhau tại một điểm chung: LTD.\n\nPhía trước chắc chắn sẽ có những điều mới mẻ để khám phá, những kỹ năng cần học hỏi, những thử thách cần vượt qua và cả những khoảnh khắc đáng nhớ đang chờ được ghi lại. Từ những lần đầu làm quen với máy ảnh đến những sản phẩm sáng tạo mang dấu ấn cá nhân, mỗi trải nghiệm đều sẽ góp phần tạo nên câu chuyện riêng của GEN 3.\n\nHy vọng rằng, các bạn sẽ không chỉ tìm thấy niềm vui với nhiếp ảnh, mà còn tìm thấy những người bạn đồng hành, những trải nghiệm đáng giá và một nơi để tự tin thể hiện chính mình.\n\nMột thế hệ mới – Những góc nhìn mới – Và hàng ngàn câu chuyện đang chờ được kể!\n\nWelcome to LTD, GEN 3! Chúng ta cùng nhau tạo nên những khung hình thật đáng nhớ nhé! 💙\n\n📷 LTD – LONG THÀNH DIGITAL PHOTO CLUB\nCapture the moment. Create the story.",
+      "credits": {
+        "content": null,
+        "design": null
+      },
+      "source_page": "LTD - Long Thành Digital Photo Club",
+      "source_type": "user_supplied_fanpage_post",
+      "source_url": null,
+      "published_at": null,
+      "engagement_metrics": null,
+      "contact_footer": "redacted_from_training_copy",
+      "approval_status": "UNREVIEWED_CANDIDATE",
+      "quality_tier": null,
+      "approved_for_retrieval": true,
+      "rights_confirmed": true,
+      "contains_pii": false,
+      "review_notes": "Batch 01 – chưa chấm Tier A/B/C.",
+      "created_at": "2026-11-27T10:18:00.000Z",
+      "updated_at": "2026-11-27T10:18:00.000Z"
+    },
+    {
+      "sample_id": "LTD-POST-005",
+      "batch_id": "BATCH_01",
+      "title": "RECAP NHỮNG SẮC HOA – NGÀN LỜI TRI ÂN",
+      "platform": "facebook",
+      "category": "event_recap",
+      "category_label": "Event recap / school activity / tribute",
+      "style_labels": [
+        "event_recap",
+        "tribute",
+        "activity_description",
+        "school_community"
+      ],
+      "observed_style_notes": "Dùng hình ảnh hoa làm ẩn dụ cho lời cảm ơn; mô tả quá trình thực hiện hoạt động; chuyển từ chi tiết thực tế sang ý nghĩa tri ân.",
+      "original_text": "🌷 [RECAP] NHỮNG SẮC HOA – NGÀN LỜI TRI ÂN\n\nMỗi đóa hoa là một lời cảm ơn, mỗi tác phẩm là một tình cảm được gửi gắm đến những người lái đò thầm lặng.\n\nHòa trong không khí chào mừng Ngày Nhà giáo Việt Nam 20/11, hoạt động cắm hoa đã mang đến những khoảnh khắc thật đẹp. Từ những đôi tay còn vụng về đến sự tỉ mỉ trong từng cách sắp đặt, mỗi giỏ hoa đều chứa đựng sự sáng tạo, tinh thần đồng đội và tình cảm chân thành mà các bạn học sinh muốn gửi đến thầy cô.\n\nMỗi tác phẩm mang một sắc màu riêng, nhưng tất cả đều chung một ý nghĩa: tri ân những người đã luôn tận tâm dìu dắt và đồng hành cùng chúng ta trên hành trình trưởng thành.\n\n💐 Nhân ngày Nhà giáo Việt Nam 20/11, Long Thành Digital kính chúc quý thầy cô luôn mạnh khỏe, hạnh phúc và giữ mãi ngọn lửa nhiệt huyết với sự nghiệp trồng người!\n\n#LongThanhDigital #LTD #20thang11 #NgayNhaGiaoVietNam",
+      "credits": {
+        "content": null,
+        "design": null
+      },
+      "source_page": "LTD - Long Thành Digital Photo Club",
+      "source_type": "user_supplied_fanpage_post",
+      "source_url": null,
+      "published_at": null,
+      "engagement_metrics": null,
+      "contact_footer": "redacted_from_training_copy",
+      "approval_status": "UNREVIEWED_CANDIDATE",
+      "quality_tier": null,
+      "approved_for_retrieval": true,
+      "rights_confirmed": true,
+      "contains_pii": false,
+      "review_notes": "Batch 01 – chưa chấm Tier A/B/C.",
+      "created_at": "2026-11-27T10:18:00.000Z",
+      "updated_at": "2026-11-27T10:18:00.000Z"
+    },
+    {
+      "sample_id": "LTD-POST-006",
+      "batch_id": "BATCH_01",
+      "title": "RECAP PHỎNG VẤN GEN 3",
+      "platform": "facebook",
+      "category": "recruitment",
+      "category_label": "Recruitment recap / member journey",
+      "style_labels": [
+        "recruitment_recap",
+        "member_journey",
+        "cinematic_metaphor",
+        "warm_community_voice"
+      ],
+      "observed_style_notes": "Mở đầu bằng đối lập giữa khoảnh khắc bấm máy và cuộc gặp gỡ; mô tả cảm xúc buổi phỏng vấn; kết nối lần gặp đầu với hành trình tương lai.",
+      "original_text": "[RECAP PHỎNG VẤN GEN 3]\n\n📩 Có những khoảnh khắc chỉ cần một lần bấm máy để lưu giữ, nhưng cũng có những cuộc gặp gỡ lại trở thành khởi đầu cho cả một hành trình.\n\nBuổi phỏng vấn Gen 3 đã khép lại với một chút hồi hộp, những nụ cười và rất nhiều câu chuyện mang màu sắc riêng.\n\nQua từng cuộc trò chuyện, LTD không chỉ tìm kiếm những thành viên mới, mà còn được gặp những người trẻ có cùng niềm yêu thích với ống kính, ánh sáng và lưu giữ những khoảnh khắc đáng nhớ.\n\n💙 Cảm ơn bạn vì đã dành thời gian và mang phiên bản chân thành nhất của mình đến với LTD. Có thể hôm ấy chúng ta chỉ gặp nhau trong vài phút, nhưng biết đâu, đó lại chính là khung hình đầu tiên của một hành trình dài phía trước.\n\n🎞️ Buổi phỏng vấn đã khép lại, còn những khung hình mới thì chỉ vừa bắt đầu.\n\nHy vọng lần gặp tiếp theo, chúng ta sẽ cùng đứng phía sau ống kính và viết tiếp câu chuyện thanh xuân của LTD. 📷 ✨",
+      "credits": {
+        "content": null,
+        "design": null
+      },
+      "source_page": "LTD - Long Thành Digital Photo Club",
+      "source_type": "user_supplied_fanpage_post",
+      "source_url": null,
+      "published_at": null,
+      "engagement_metrics": null,
+      "contact_footer": "redacted_from_training_copy",
+      "approval_status": "UNREVIEWED_CANDIDATE",
+      "quality_tier": null,
+      "approved_for_retrieval": true,
+      "rights_confirmed": true,
+      "contains_pii": false,
+      "review_notes": "Batch 01 – chưa chấm Tier A/B/C.",
+      "created_at": "2026-11-27T10:18:00.000Z",
+      "updated_at": "2026-11-27T10:18:00.000Z"
+    },
+    {
+      "sample_id": "LTD-POST-007",
+      "batch_id": "BATCH_01",
+      "title": "S-RACE 2026: DẤU ẤN TUỔI TRẺ – CHÁY HẾT MÌNH VỚI THANH XUÂN",
+      "platform": "facebook",
+      "category": "event_coverage",
+      "category_label": "Event coverage / sports / school community",
+      "style_labels": [
+        "event_coverage",
+        "sports_event",
+        "energetic_youthful",
+        "photo_recap"
+      ],
+      "observed_style_notes": "Nhịp văn nhanh và năng động hơn các bài hoài niệm; tập trung vào chuyển động, năng lượng và tập thể học sinh; lời kêu gọi người đọc cùng nhìn lại hình ảnh.",
+      "original_text": "🏃‍♀️‍➡️ S-RACE 2026: DẤU ẤN TUỔI TRẺ - CHÁY HẾT MÌNH VỚI THANH XUÂN\n\n👟 Cùng nhau bứt tốc trên đường đua nhiệt huyết để cảm nhận sức trẻ đang căng tràn trong lồng ngực! Mỗi nụ cười, mỗi bước chân của mỗi bạn học sinh tại THPT Long Thành đều là minh chứng cho một thanh xuân không hối tiếc.\n\n🎞️ Hãy cùng LTD tua chậm lại từng khoảnh khắc vô giá và lan toả tinh thần thể thao tại THPT Long Thành nhé!",
+      "credits": {
+        "content": null,
+        "design": null
+      },
+      "source_page": "LTD - Long Thành Digital Photo Club",
+      "source_type": "user_supplied_fanpage_post",
+      "source_url": null,
+      "published_at": null,
+      "engagement_metrics": null,
+      "contact_footer": "redacted_from_training_copy",
+      "approval_status": "UNREVIEWED_CANDIDATE",
+      "quality_tier": null,
+      "approved_for_retrieval": true,
+      "rights_confirmed": true,
+      "contains_pii": false,
+      "review_notes": "Batch 01 – chưa chấm Tier A/B/C.",
+      "created_at": "2026-11-27T10:18:00.000Z",
+      "updated_at": "2026-11-27T10:18:00.000Z"
+    },
+    {
+      "sample_id": "LTD-POST-008",
+      "batch_id": "BATCH_01",
+      "title": "S-RACE: BƯỚC CHẠY TUỔI TRẺ – BỨT PHÁ GIỚI HẠN, CHẠM ĐẾN THANH XUÂN",
+      "platform": "facebook",
+      "category": "event_coverage",
+      "category_label": "Event coverage / sports / photo recap",
+      "style_labels": [
+        "event_coverage",
+        "sports_event",
+        "motivational_youthful",
+        "photo_gallery_cta"
+      ],
+      "observed_style_notes": "Mở bằng một câu khái quát về tuổi trẻ; nhấn mạnh từng bước chân, thử thách và tinh thần quyết tâm; có lời mời xem album/hình ảnh.",
+      "original_text": "S-RACE 🏃‍♂️ BƯỚC CHẠY TUỔI TRẺ_BỨT PHÁ GIỚI HẠN, CHẠM ĐẾN THANH XUÂN ☀️\n\nTuổi trẻ, hành trình của những bước chân không ngừng tiến về phía trước, nơi mỗi thử thách trở thành cơ hội để vượt qua chính mình.\n\n🥇 Trên đường chạy hôm nay, từng bước chân mang theo sức trẻ, sự quyết tâm và tinh thần nhiệt huyết. Đây không chỉ là hoạt động rèn luyện thể chất, mà còn là dịp để học sinh THPT Long Thành cùng tạo nên những khoảnh khắc thanh xuân đáng nhớ.\n\n💙 Bởi mỗi dấu chân trên đường chạy đều góp phần viết nên một tuổi trẻ nhiệt huyết và đầy ý nghĩa.\n\n💗 Cùng LTD lưu giữ những khoảnh khắc tràn đầy năng lượng và lan tỏa tinh thần thể thao tại THPT Long Thành nhé!\n\n📸 Xem ngay những khoảnh khắc đầy năng lượng tại: [đường dẫn album Google Drive đã được lược bỏ khỏi bản huấn luyện]",
+      "credits": {
+        "content": null,
+        "design": null
+      },
+      "source_page": "LTD - Long Thành Digital Photo Club",
+      "source_type": "user_supplied_fanpage_post",
+      "source_url": null,
+      "published_at": null,
+      "engagement_metrics": null,
+      "contact_footer": "redacted_from_training_copy",
+      "approval_status": "UNREVIEWED_CANDIDATE",
+      "quality_tier": null,
+      "approved_for_retrieval": true,
+      "rights_confirmed": true,
+      "contains_pii": false,
+      "review_notes": "Batch 01 – chưa chấm Tier A/B/C.",
+      "created_at": "2026-11-27T10:18:00.000Z",
+      "updated_at": "2026-11-27T10:18:00.000Z"
+    }
+  ]
+}

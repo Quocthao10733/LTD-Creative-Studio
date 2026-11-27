@@ -33,10 +33,25 @@ export interface GenerateContentRequest {
   model?: string;
 }
 
+export interface FactCheckResult {
+  unsupported_claims: string[];
+  missing_information: string[];
+  needs_human_confirmation: boolean;
+}
+
 export interface GenerateContentResponse {
+  status?: "draft";
+  content_type?: string;
+  platform?: ContentPlatform;
+  headline?: string;
   hook: string;
   body: string;
+  cta?: string;
   hashtags: string[];
   visualTips: string;
   factsChecklist: string[];
+  fact_check?: FactCheckResult;
+  editorial_notes?: string[];
+  source_sample_ids?: string[];
+  prompt_version?: string;
 }

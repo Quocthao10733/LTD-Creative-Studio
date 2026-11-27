@@ -1,29 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ApiError, ThinkingLevel } from "@google/genai";
-import { getGeminiClient, LTD_KNOWLEDGE_BASE } from "@/lib/ai/gemini";
-import { resolveGeminiModel } from "@/lib/ai/models";
+import { getGeminiClient } from "@/lib/ai/gemini";
+import { GeminiModel, resolveGeminiModel } from "@/lib/ai/models";
 import { loadSkillGuidance } from "@/lib/ai/skills";
+import {
+  DIRECTOR_PROMPT_VERSION,
+  DIRECTOR_SYSTEM_INSTRUCTION,
+  loadDirectorOrganizationContext,
+} from "@/lib/ai/knowledge/director/org-knowledge";
 import { IdeaCard } from "@/lib/types/director";
-
-const EXPERT_DIRECTOR_RULES = `
-=== QUY TẮC CREATIVE DIRECTOR CHUYÊN GIA ===
-
-1. CONCEPT PHÂN BIỆT THẬT SỰ: 3 concept phải khác biệt về GÓC NHÌN (angle), THÔNG ĐIỆP (message), FORMAT (định dạng). Không được 3 concept cùng format TikTok với hook khác nhau.
-
-2. RULE OF SPECIFICITY: Mỗi concept phải có chi tiết QUAN SÁT ĐƯỢC: địa điểm (hồ Trị An, bến sông Long Thành, phố cổ), thiết bị đề xuất (Sony A7IV + 35mm f/1.4, DJI Mini 4 Pro), hành động quay được (xoay khâu độ, bấm shutter, chỉnh ánh sáng rim light).
-
-3. NO FABRICATION: Tuyệt đối không bịa: hoạt động đã diễn ra, tên thành viên, ngày giờ cụ thể, thiết bị CLB đang sở hữu, KPI kỳ vọng (views, likes).
-
-4. FORMAT-TOPIC FIT: Chọn format HỢP VỚI CHỦ ĐỀ:
-   - Tutorial kỹ thuật → Workshop/Reels giáo dục
-   - Cảm hứng/Storytelling → Phototrip/Documentary
-   - Tuyển thành viên → Carousel/Short video năng động
-   - Recap sự kiện → Recap video nhịp nhanh
-
-5. FEASIBILITY THỰC TẾ: Nêu rõ điều kiện THIẾU: "Cần chốt lịch phototrip với Ban Kỹ Thuật", "Cần mượn flycam từ thành viên A", "Cần xin phép quản lý hồ Trị An". Không gán "Dễ triển khai" mặc định.
-
-6. SWAP TEST: Thay "LTD" bằng tên CLB khác → concept vẫn hợp? Nếu có → THẤT BẠI. Phải gắn liền với bản sắc LTD (2 Ban, địa danh Long Thành, văn hóa CLB).
-`;
 
 export async function POST(request: NextRequest) {
   try {
@@ -53,71 +38,86 @@ export async function POST(request: NextRequest) {
     }
 
     const skillGuidance = await loadSkillGuidance(["content-strategy", "social", "video"]);
+    const orgContext = loadDirectorOrganizationContext();
     const ai = getGeminiClient();
-    const systemPrompt = `
-Bạn là Creative Director kiêm đạo diễn nội dung cho CLB Nhiếp ảnh LTD (Long Thành Digital Photo Club).
 
-${LTD_KNOWLEDGE_BASE}
+    const systemPrompt = `${DIRECTOR_SYSTEM_INSTRUCTION}
 
-HƯỚNG DẪN SKILL ĐƯỢC NẠP TỪ REPO:
+${orgContext}
+
+HƯỚNG DẪN SKILL TỪ REPO:
 ${skillGuidance}
 
-${EXPERT_DIRECTOR_RULES}
-
-NHIỆM VỤ:
-Tạo đúng 3 concept KHÁC BIỆT THẬT SỰ cho chủ đề người dùng đưa ra. Mỗi concept: góc nhìn riêng, lý do quan tâm, triển khai phù hợp nguồn lực CLB.
-
-NGUYÊN TẮC BẮT BUỘC:
-- Không biến mọi chủ đề thành cùng format TikTok/workshop/phototrip. Chọn format HỢP VỚI CHỦ ĐỀ.
-- Tránh câu sáo: "thanh xuân", "chạm đến cảm xúc", "một cú bấm triệu cảm xúc" nếu không có chi tiết cụ thể.
-- TUYỆT ĐỐI KHÔNG bịa: hoạt động đã diễn ra, tên thành viên, địa điểm/ngày giờ, thiết bị CLB sở hữu, KPI kỳ vọng.
-- Shotlist: mô tả hình ảnh/cỡ cảnh/hành động QUAY ĐƯỢC; không ép whip pan, flycam, golden hour nếu không cần.
-- Equipment: chỉ nêu LOẠI thiết bị đề xuất, KHÔNG khẳng định CLB sở hữu model cụ thể.
-- Timeline: trình tự chuẩn bị/triển khai hoặc "Cần chốt lịch CLB"; không tự đặt ngày giờ.
-- Feasibility: nêu điều kiện THIẾU thực tế, không gán "cao" mặc định.
-- TRƯỚC KHI TRẢ LỜI: Swap Test - thay "LTD" bằng CLB khác, concept vẫn hợp? Nếu có → VIẾT LẠI.
+NHIỆM VỤ: Tạo đúng 3 đề xuất chương trình / concept KHÁC BIỆT THẬT SỰ cho chủ đề được yêu cầu.
+Mỗi đề xuất phải phân tách rõ:
+- Fact (từ dữ liệu tổ chức/brief) vs Assumptions / Missing Confirmations (những gì cần Ban Điều hành chốt: địa điểm, người hướng dẫn, ngân sách, thiết bị).
+- Trạng thái mặc định luôn là "PROPOSED".
+- Shotlist mô tả cảnh/nhịp quay thực tế khả thi; Equipment chỉ nêu loại thiết bị cần thiết và ghi rõ "(Needs confirmation)" nếu chưa có trong Resource Inventory.
+- Không tự tạo ngày/giờ cụ thể, không tự cam kết ngân sách hoặc tự phân công tên thành viên nếu chưa có lịch rảnh.
 - Trả về DUY NHẤT mảng JSON hợp lệ (3 phần tử), KHÔNG markdown:
 [
   {
-    "title": "Tên concept ngắn",
-    "bigIdea": "Ý tưởng và thông điệp cốt lõi",
-    "format": "Định dạng phù hợp",
+    "title": "Tên concept ngắn gọn",
+    "bigIdea": "Vấn đề cần giải quyết + ý tưởng & giá trị mang lại",
+    "format": "Định dạng phù hợp với chủ đề",
     "targetAudience": "Đối tượng cụ thể",
-    "shotlist": "Các cảnh/nhịp triển khai có thể quay",
-    "equipment": "Loại thiết bị đề xuất",
-    "timeline": "Trình tự hoặc điều kiện cần chốt",
-    "feasibility": "Điều kiện và rủi ro thực tế còn thiếu"
+    "shotlist": "Các cảnh/nhịp triển khai hoặc khung chương trình khả thi",
+    "equipment": "Loại thiết bị/hậu cần đề xuất (ghi rõ Needs confirmation nếu chưa xác nhận)",
+    "timeline": "Trình tự chuẩn bị (T-2 tuần, T-1 tuần, ngày diễn ra, hậu kỳ) — không tự chốt ngày",
+    "feasibility": "Đánh giá tính khả thi thực tế & điều kiện phụ thuộc",
+    "approvalStatus": "PROPOSED",
+    "expectedOutcomes": ["Đầu ra cụ thể 1", "Đầu ra cụ thể 2"],
+    "departmentsInvolved": ["COMM", "TECH"],
+    "missingConfirmations": ["Cần xác nhận người hướng dẫn", "Cần xác nhận địa điểm/ngân sách"],
+    "risks": ["Rủi ro 1 + phương án dự phòng"],
+    "kpiTarget": ["KPI mục tiêu (Target) — chưa phải số liệu thực tế"]
   }
-]
-`;
-    const userPrompt = `
-Chủ đề: ${topic.trim()}
-${typeof focusArea === "string" && focusArea.trim() ? `Định hướng/định dạng ưu tiên: ${focusArea.trim()}` : ""}
-`;
+]`;
 
-    const generateWithModel = (requestedModel: string) =>
+    const userPrompt = `Chủ đề / Mục tiêu: ${topic.trim()}
+${typeof focusArea === "string" && focusArea.trim() ? `Định hướng/định dạng ưu tiên: ${focusArea.trim()}` : ""}`;
+
+    const generateWithModel = (requestedModel: GeminiModel) =>
       ai.models.generateContent({
         model: requestedModel,
         contents: userPrompt,
         config: {
           systemInstruction: systemPrompt,
-          temperature: 0.7,
-          thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
+          temperature: 0.65,
+          ...(requestedModel === "gemini-2.5-flash"
+            ? { thinkingConfig: { thinkingLevel: ThinkingLevel.MEDIUM } }
+            : {}),
           responseMimeType: "application/json",
         },
       });
 
-    let modelUsed = selectedModel;
-    let response;
-    try {
-      response = await generateWithModel(selectedModel);
-    } catch (error) {
-      if (!(error instanceof ApiError) || error.status < 500 || selectedModel === "gemini-3.5-flash-lite") {
-        throw error;
-      }
+    const fallbackOrder: GeminiModel[] = [
+      selectedModel,
+      ...(selectedModel !== "gemini-2.0-flash" ? (["gemini-2.0-flash"] as const) : []),
+      ...(selectedModel !== "gemini-2.0-flash-lite" ? (["gemini-2.0-flash-lite"] as const) : []),
+    ];
 
-      modelUsed = "gemini-3.5-flash-lite";
-      response = await generateWithModel(modelUsed);
+    let modelUsed: GeminiModel = selectedModel;
+    let response;
+    let lastError: unknown;
+
+    for (const candidateModel of fallbackOrder) {
+      try {
+        modelUsed = candidateModel;
+        response = await generateWithModel(candidateModel);
+        break;
+      } catch (error) {
+        lastError = error;
+        const canFallback =
+          error instanceof ApiError && (error.status === 404 || error.status >= 500);
+        if (!canFallback || candidateModel === fallbackOrder[fallbackOrder.length - 1]) {
+          throw error;
+        }
+      }
+    }
+
+    if (!response) {
+      throw lastError;
     }
 
     const responseText = response.text || "";
@@ -129,6 +129,7 @@ ${typeof focusArea === "string" && focusArea.trim() ? `Định hướng/định 
 
     const ideas: IdeaCard[] = parsed.map((item, index) => ({
       ...item,
+      approvalStatus: "PROPOSED",
       id: `${Date.now()}_${index}`,
       createdAt: new Date().toISOString(),
     }));
@@ -137,6 +138,7 @@ ${typeof focusArea === "string" && focusArea.trim() ? `Định hướng/định 
       success: true,
       data: ideas,
       modelUsed,
+      promptVersion: DIRECTOR_PROMPT_VERSION,
     });
   } catch (error) {
     console.error("Lỗi Gemini Creative Director:", error);
